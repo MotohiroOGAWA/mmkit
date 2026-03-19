@@ -21,11 +21,11 @@ Classes
 
    * - Name
      - Description
-   * - :doc:`Formula <api/generated/mmkit.Formula.Formula>`
+   * - :doc:`Formula <api/generated/mmkit.Formula>`
      - Represents a molecular formula with elemental composition, charge, and exact mass.
-   * - :doc:`Compound <api/generated/mmkit.Compound.Compound>`
+   * - :doc:`Compound <api/generated/mmkit.Compound>`
      - Represents a chemical structure with canonical SMILES, molecular formula, and atom mapping support.
-   * - :doc:`Adduct <api/generated/mmkit.Adduct.Adduct>`
+   * - :doc:`Adduct <api/generated/mmkit.Adduct>`
      - Represents an adduct ion and provides conversion from neutral molecules to ion forms.
 
 

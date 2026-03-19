@@ -3,11 +3,14 @@ mmkit documentation
 
 Welcome to the documentation for **mmkit**.
 
-This documentation describes the usage and API of the package.
+``mmkit`` is a lightweight Python toolkit for handling chemical formulas,
+molecular structures, and adduct ions. It provides utilities for
+cheminformatics and mass spectrometry workflows.
 
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
    usage
+   getting_started
    api

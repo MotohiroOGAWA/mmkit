@@ -1,9 +1,13 @@
 Adduct
 ======
+.. currentmodule:: mmkit
 
+.. autoclass:: Adduct
+   :members:
+   
 Represents an adduct ion in mass spectrometry.
 
-The :class:`~mmkit.Adduct.Adduct` class describes how a neutral molecule is
+The :class:`~mmkit.Adduct` class describes how a neutral molecule is
 transformed into an observed ion through adduct formation. It tracks the number
 of molecules, added and removed formulas, and resulting charge.
 
@@ -19,4 +23,4 @@ Core class for representing and applying adduct transformations.
 .. autosummary::
    :toctree: generated/
 
-   mmkit.Adduct.Adduct
+   mmkit.Adduct
