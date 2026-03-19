@@ -13,15 +13,11 @@
 Properties
 ----------
 
-.. list-table::
-   :header-rows: 1
-   :widths: 30 70
+.. autosummary::
+   :nosignatures:
 
-   * - Name
-     - Description
 {% for name in attributes %}
-   * - :attr:`~{{ module }}.{{ objname }}.{{ name }}`
-     - {{ name }}
+   {{ objname }}.{{ name }}
 {% endfor %}
 {% endif %}
 
@@ -29,15 +25,11 @@ Properties
 Methods
 -------
 
-.. list-table::
-   :header-rows: 1
-   :widths: 30 70
+.. autosummary::
+   :nosignatures:
 
-   * - Name
-     - Description
 {% for name in methods %}
-   * - :meth:`~{{ module }}.{{ objname }}.{{ name }}`
-     - {{ name }}
+   {{ objname }}.{{ name }}
 {% endfor %}
 {% endif %}
 
