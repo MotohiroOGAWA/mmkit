@@ -18,6 +18,5 @@ Core class for representing and applying adduct transformations.
 
 .. autosummary::
    :toctree: generated/
-   :nosignatures:
 
    mmkit.Adduct.Adduct

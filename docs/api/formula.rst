@@ -13,6 +13,5 @@ Class
 
 .. autosummary::
    :toctree: generated/
-   :nosignatures:
 
    mmkit.Formula.Formula
