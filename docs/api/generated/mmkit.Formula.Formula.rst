@@ -4,7 +4,6 @@
 .. currentmodule:: mmkit.Formula
 
 .. autoclass:: Formula
-   :no-index-entry:
 
 
 
@@ -16,25 +15,25 @@ Properties
    :nosignatures:
 
 
-   mmkit.Formula.Formula.charge
+   ~Formula.charge
 
-   mmkit.Formula.Formula.elements
+   ~Formula.elements
 
-   mmkit.Formula.Formula.exact_mass
+   ~Formula.exact_mass
 
-   mmkit.Formula.Formula.is_nonnegative
+   ~Formula.is_nonnegative
 
-   mmkit.Formula.Formula.normalized
+   ~Formula.normalized
 
-   mmkit.Formula.Formula.normalized_plain
+   ~Formula.normalized_plain
 
-   mmkit.Formula.Formula.plain
+   ~Formula.plain
 
-   mmkit.Formula.Formula.plain_value
+   ~Formula.plain_value
 
-   mmkit.Formula.Formula.raw_formula
+   ~Formula.raw_formula
 
-   mmkit.Formula.Formula.value
+   ~Formula.value
 
 
 
@@ -46,19 +45,19 @@ Methods
    :nosignatures:
 
 
-   mmkit.Formula.Formula.__init__
+   ~Formula.__init__
 
-   mmkit.Formula.Formula.copy
+   ~Formula.copy
 
-   mmkit.Formula.Formula.empty
+   ~Formula.empty
 
-   mmkit.Formula.Formula.eq
+   ~Formula.eq
 
-   mmkit.Formula.Formula.from_mol
+   ~Formula.from_mol
 
-   mmkit.Formula.Formula.neutron
+   ~Formula.neutron
 
-   mmkit.Formula.Formula.parse
+   ~Formula.parse
 
-   mmkit.Formula.Formula.to_string
+   ~Formula.to_string
 

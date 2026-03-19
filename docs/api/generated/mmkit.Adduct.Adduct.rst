@@ -4,7 +4,6 @@
 .. currentmodule:: mmkit.Adduct
 
 .. autoclass:: Adduct
-   :no-index-entry:
 
 
 
@@ -16,19 +15,19 @@ Properties
    :nosignatures:
 
 
-   mmkit.Adduct.Adduct.adduct_formulas
+   ~Adduct.adduct_formulas
 
-   mmkit.Adduct.Adduct.charge
+   ~Adduct.charge
 
-   mmkit.Adduct.Adduct.element_diff
+   ~Adduct.element_diff
 
-   mmkit.Adduct.Adduct.formula_diff
+   ~Adduct.formula_diff
 
-   mmkit.Adduct.Adduct.ion_type
+   ~Adduct.ion_type
 
-   mmkit.Adduct.Adduct.mass_shift
+   ~Adduct.mass_shift
 
-   mmkit.Adduct.Adduct.n_molecules
+   ~Adduct.n_molecules
 
 
 
@@ -40,25 +39,25 @@ Methods
    :nosignatures:
 
 
-   mmkit.Adduct.Adduct.__init__
+   ~Adduct.__init__
 
-   mmkit.Adduct.Adduct.add
+   ~Adduct.add
 
-   mmkit.Adduct.Adduct.add_prefer_self
+   ~Adduct.add_prefer_self
 
-   mmkit.Adduct.Adduct.apply_to_formula
+   ~Adduct.apply_to_formula
 
-   mmkit.Adduct.Adduct.apply_to_mass
+   ~Adduct.apply_to_mass
 
-   mmkit.Adduct.Adduct.apply_to_mz
+   ~Adduct.apply_to_mz
 
-   mmkit.Adduct.Adduct.copy
+   ~Adduct.copy
 
-   mmkit.Adduct.Adduct.get_formula_count
+   ~Adduct.get_formula_count
 
-   mmkit.Adduct.Adduct.parse
+   ~Adduct.parse
 
-   mmkit.Adduct.Adduct.set_charge
+   ~Adduct.set_charge
 
-   mmkit.Adduct.Adduct.split
+   ~Adduct.split
 

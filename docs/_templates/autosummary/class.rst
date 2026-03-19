@@ -4,7 +4,6 @@
 .. currentmodule:: {{ module }}
 
 .. autoclass:: {{ objname }}
-   :no-index-entry:
 
 {% if docstring %}
 {{ docstring }}
@@ -18,7 +17,7 @@ Properties
    :nosignatures:
 
 {% for name in attributes %}
-   {{ fullname }}.{{ name }}
+   ~{{ objname }}.{{ name }}
 {% endfor %}
 {% endif %}
 
@@ -30,6 +29,6 @@ Methods
    :nosignatures:
 
 {% for name in methods %}
-   {{ fullname }}.{{ name }}
+   ~{{ objname }}.{{ name }}
 {% endfor %}
 {% endif %}
