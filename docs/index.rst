@@ -14,3 +14,4 @@ cheminformatics and mass spectrometry workflows.
    usage
    getting_started
    api
+   development
