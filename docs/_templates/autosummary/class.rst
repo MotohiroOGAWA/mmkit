@@ -13,11 +13,15 @@
 Properties
 ----------
 
-.. autosummary::
-   :nosignatures:
+.. list-table::
+   :header-rows: 1
+   :widths: 30 70
 
+   * - Name
+     - Description
 {% for name in attributes %}
-   {{ objname }}.{{ name }}
+   * - :attr:`~{{ module }}.{{ objname }}.{{ name }}`
+     - See below.
 {% endfor %}
 {% endif %}
 

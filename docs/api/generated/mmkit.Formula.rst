@@ -11,29 +11,42 @@
 Properties
 ----------
 
-.. autosummary::
-   :nosignatures:
+.. list-table::
+   :header-rows: 1
+   :widths: 30 70
 
+   * - Name
+     - Description
 
-   Formula.charge
+   * - :attr:`~mmkit.Formula.charge`
+     - See below.
 
-   Formula.elements
+   * - :attr:`~mmkit.Formula.elements`
+     - See below.
 
-   Formula.exact_mass
+   * - :attr:`~mmkit.Formula.exact_mass`
+     - See below.
 
-   Formula.is_nonnegative
+   * - :attr:`~mmkit.Formula.is_nonnegative`
+     - See below.
 
-   Formula.normalized
+   * - :attr:`~mmkit.Formula.normalized`
+     - See below.
 
-   Formula.normalized_plain
+   * - :attr:`~mmkit.Formula.normalized_plain`
+     - See below.
 
-   Formula.plain
+   * - :attr:`~mmkit.Formula.plain`
+     - See below.
 
-   Formula.plain_value
+   * - :attr:`~mmkit.Formula.plain_value`
+     - See below.
 
-   Formula.raw_formula
+   * - :attr:`~mmkit.Formula.raw_formula`
+     - See below.
 
-   Formula.value
+   * - :attr:`~mmkit.Formula.value`
+     - See below.
 
 
 

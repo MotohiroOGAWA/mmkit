@@ -11,27 +11,39 @@
 Properties
 ----------
 
-.. autosummary::
-   :nosignatures:
+.. list-table::
+   :header-rows: 1
+   :widths: 30 70
 
+   * - Name
+     - Description
 
-   Compound.atom_index_mapped_smiles
+   * - :attr:`~mmkit.Compound.atom_index_mapped_smiles`
+     - See below.
 
-   Compound.atom_map_to_index
+   * - :attr:`~mmkit.Compound.atom_map_to_index`
+     - See below.
 
-   Compound.charge
+   * - :attr:`~mmkit.Compound.charge`
+     - See below.
 
-   Compound.exact_mass
+   * - :attr:`~mmkit.Compound.exact_mass`
+     - See below.
 
-   Compound.formula
+   * - :attr:`~mmkit.Compound.formula`
+     - See below.
 
-   Compound.mapped_smiles
+   * - :attr:`~mmkit.Compound.mapped_smiles`
+     - See below.
 
-   Compound.mol
+   * - :attr:`~mmkit.Compound.mol`
+     - See below.
 
-   Compound.mol_with_atom_map
+   * - :attr:`~mmkit.Compound.mol_with_atom_map`
+     - See below.
 
-   Compound.smiles
+   * - :attr:`~mmkit.Compound.smiles`
+     - See below.
 
 
 

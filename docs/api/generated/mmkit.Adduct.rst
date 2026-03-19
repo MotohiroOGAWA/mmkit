@@ -11,23 +11,33 @@
 Properties
 ----------
 
-.. autosummary::
-   :nosignatures:
+.. list-table::
+   :header-rows: 1
+   :widths: 30 70
 
+   * - Name
+     - Description
 
-   Adduct.adduct_formulas
+   * - :attr:`~mmkit.Adduct.adduct_formulas`
+     - See below.
 
-   Adduct.charge
+   * - :attr:`~mmkit.Adduct.charge`
+     - See below.
 
-   Adduct.element_diff
+   * - :attr:`~mmkit.Adduct.element_diff`
+     - See below.
 
-   Adduct.formula_diff
+   * - :attr:`~mmkit.Adduct.formula_diff`
+     - See below.
 
-   Adduct.ion_type
+   * - :attr:`~mmkit.Adduct.ion_type`
+     - See below.
 
-   Adduct.mass_shift
+   * - :attr:`~mmkit.Adduct.mass_shift`
+     - See below.
 
-   Adduct.n_molecules
+   * - :attr:`~mmkit.Adduct.n_molecules`
+     - See below.
 
 
 
