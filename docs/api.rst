@@ -20,7 +20,7 @@ Classes
 
    * - Name
      - Description
-   * - :class:`Formula`
+   * - :class:`~mmkit.Formula.Formula`
      - Represents a molecular formula with elemental composition, charge, and exact mass.
-   * - :class:`Adduct`
+   * - :class:`~mmkit.Adduct.Adduct`
      - Represents an adduct ion and provides conversion from neutral molecules to ion forms.
