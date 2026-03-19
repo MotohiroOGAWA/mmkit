@@ -18,6 +18,14 @@ dependencies = [
     "bidict"
 ]
 
+[project.optional-dependencies]
+docs = [
+    "sphinx>=8",
+    "furo",
+    "sphinx-autodoc-typehints",
+    "myst-parser",
+]
+
 [tool.mypy]
 files = ["mmkit"]
 show_error_codes = true
