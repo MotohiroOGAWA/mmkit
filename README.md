@@ -19,7 +19,7 @@ providing a consistent API for:
 
 Full documentation is available at:
 
-👉 https://motohiroogawa.github.io/mmkit/
+👉 https://mmkit.readthedocs.io
 
 ## Installation
 

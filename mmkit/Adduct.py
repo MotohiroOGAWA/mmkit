@@ -657,3 +657,113 @@ class Adduct:
                 )
 
         return tuple(result)
+
+    @staticmethod
+    def decompose_adduct(
+        adduct: "Adduct",
+        reference_adducts: Tuple["Adduct", ...],
+    ) -> Tuple[Dict["Adduct", int], "Adduct"]:
+        """
+        Decompose an adduct into known adduct types and a neutral component.
+
+        Parameters
+        ----------
+        adduct : Adduct
+            Target adduct to decompose.
+        reference_adducts : tuple[Adduct, ...]
+            Supported adduct types used for matching.
+
+        Returns
+        -------
+        tuple[dict[Adduct, int], Adduct]
+            - Mapping from supported adduct type to count.
+            - Remaining neutral component (charge = 0).
+
+        Raises
+        ------
+        ValueError
+            If an unsupported adduct formula is encountered.
+        NotImplementedError
+            If negative adduct decomposition is requested.
+        """
+        from collections import defaultdict
+
+        # Frequently used neutral formulas
+        h2o = Formula.parse("H2O")
+        neutron = Formula.parse("+n")
+
+        # Result: supported adduct composition
+        adduct_composition: Dict[Adduct, int] = defaultdict(int)
+
+        # Neutral components (added / removed)
+        neutral_in: List[Formula] = []
+        neutral_out: List[Formula] = []
+
+        # ------------------------------------------------------------------
+        # Positive mode
+        # ------------------------------------------------------------------
+        if adduct.charge > 0:
+            # Build lookup: formula string → supported adduct
+            supported_lookup = {
+                str(ref.formula_diff): ref
+                for ref in reference_adducts
+                if ref.charge > 0
+            }
+
+            # Iterate over all sub-formulas in the adduct
+            for formula, count in adduct._adduct_formulas.items():
+                if count == 0:
+                    continue
+
+                formula_str = str(formula)
+
+                # ----------------------------------------------------------
+                # Case 1: supported adduct type
+                # ----------------------------------------------------------
+                if formula_str in supported_lookup:
+                    adduct_type = supported_lookup[formula_str]
+                    adduct_composition[adduct_type] += count
+                    continue
+
+                # ----------------------------------------------------------
+                # Case 2: neutral or special species
+                # ----------------------------------------------------------
+                if count > 0:
+                    if formula in (h2o, neutron):
+                        neutral_in.extend([formula.copy()] * count)
+                    else:
+                        raise ValueError(
+                            f"Unsupported positive adduct formula: {formula} in {adduct}"
+                        )
+                else:
+                    neutral_out.extend([formula.copy()] * (-count))
+
+        # ------------------------------------------------------------------
+        # Negative mode (not implemented)
+        # ------------------------------------------------------------------
+        elif adduct.charge < 0:
+            raise NotImplementedError("Negative adduct decomposition is not implemented.")
+
+        # ------------------------------------------------------------------
+        # Neutral (invalid)
+        # ------------------------------------------------------------------
+        else:
+            raise ValueError(f"Adduct must have non-zero charge: {adduct}")
+
+        # ------------------------------------------------------------------
+        # Build neutral component (charge = 0)
+        # ------------------------------------------------------------------
+        neutral_component = Adduct(
+            ion_type=adduct._ion_type,
+            n_molecules=adduct._n_molecules,
+            adducts_in=neutral_in,
+            adducts_out=neutral_out,
+            charge=0,
+        )
+
+        # Sort output for deterministic behavior
+        adduct_composition = dict(
+            sorted(adduct_composition.items(), key=lambda x: str(x[0]))
+        )
+
+        return adduct_composition, neutral_component
