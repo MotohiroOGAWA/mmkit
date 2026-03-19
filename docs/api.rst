@@ -24,3 +24,11 @@ Classes
      - Represents a molecular formula with elemental composition, charge, and exact mass.
    * - :class:`~mmkit.Adduct.Adduct`
      - Represents an adduct ion and provides conversion from neutral molecules to ion forms.
+
+
+.. toctree::
+   :maxdepth: 2
+   :hidden:
+
+   formula
+   adduct
