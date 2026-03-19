@@ -21,7 +21,7 @@ Properties
      - Description
 {% for name in attributes %}
    * - :attr:`~{{ module }}.{{ objname }}.{{ name }}`
-     - See below.
+     - :summary:`{{ module }}.{{ objname }}.{{ name }}`
 {% endfor %}
 {% endif %}
 
@@ -29,11 +29,15 @@ Properties
 Methods
 -------
 
-.. autosummary::
-   :nosignatures:
+.. list-table::
+   :header-rows: 1
+   :widths: 30 70
 
+   * - Name
+     - Description
 {% for name in methods %}
-   {{ objname }}.{{ name }}
+   * - :meth:`~{{ module }}.{{ objname }}.{{ name }}`
+     - :summary:`{{ module }}.{{ objname }}.{{ name }}`
 {% endfor %}
 {% endif %}
 
