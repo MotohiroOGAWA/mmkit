@@ -1,11 +1,26 @@
 API Reference
 =============
 
-Modules
--------
+The ``mmkit`` API provides lightweight utilities for representing molecular
+formulas and adduct ions in a consistent and programmatic way.
 
-.. toctree::
-   :maxdepth: 2
+This reference documents the two core modules of the package:
 
-   api/formula
-   api/adduct
+- ``Formula``: tools for handling elemental compositions, exact masses, and charge-aware formula objects
+- ``Adduct``: tools for representing adduct ions, parsing adduct strings, and converting neutral molecules into observed ion forms
+
+These classes are designed to support mass spectrometry workflows such as
+formula manipulation, adduct handling, and m/z calculation.
+
+Classes
+=======
+
+.. list-table::
+   :header-rows: 1
+
+   * - Name
+     - Description
+   * - :class:`Formula`
+     - Represents a molecular formula with elemental composition, charge, and exact mass.
+   * - :class:`Adduct`
+     - Represents an adduct ion and provides conversion from neutral molecules to ion forms.

@@ -1,15 +1,23 @@
 Adduct
 ======
 
-Adduct-related classes and utilities.
+Represents an adduct ion in mass spectrometry.
 
-Classes
--------
+The :class:`~mmkit.Adduct.Adduct` class describes how a neutral molecule is
+transformed into an observed ion through adduct formation. It tracks the number
+of molecules, added and removed formulas, and resulting charge.
 
-Adduct
-~~~~~~
+This class supports parsing standard adduct notation such as ``[M+H]+`` or
+``[2M+Na]+``, computing formula and mass differences, and converting neutral
+molecules into ion formulas or m/z values.
 
-.. autoclass:: mmkit.Adduct.Adduct
-   :members:
-   :undoc-members:
-   :show-inheritance:
+Class
+-----
+
+Core class for representing and applying adduct transformations.
+
+.. autosummary::
+   :toctree: generated/
+   :nosignatures:
+
+   mmkit.Adduct.Adduct

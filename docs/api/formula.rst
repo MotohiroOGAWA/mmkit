@@ -1,15 +1,18 @@
 Formula
 =======
 
-Formula-related classes and utilities.
+Represents a chemical formula with elemental composition, charge, and exact mass.
 
-Classes
--------
+The :class:`~mmkit.Formula.Formula` class provides functionality for parsing,
+manipulating, and comparing molecular formulas. It supports arithmetic operations,
+exact mass calculation, and charge-aware handling, making it suitable for
+mass spectrometry and cheminformatics workflows.
 
-Formula
-~~~~~~~
+Class
+-----
 
-.. autoclass:: mmkit.Formula.Formula
-   :members:
-   :undoc-members:
-   :show-inheritance:
+.. autosummary::
+   :toctree: generated/
+   :nosignatures:
+
+   mmkit.Formula.Formula
