@@ -30,5 +30,5 @@ Classes
    :maxdepth: 2
    :hidden:
 
-   formula
-   adduct
+   api/formula
+   api/adduct
