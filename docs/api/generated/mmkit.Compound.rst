@@ -19,31 +19,31 @@ Properties
      - Description
 
    * - :attr:`~mmkit.Compound.atom_index_mapped_smiles`
-     - See below.
+     - SMILES string with atom indices used as atom map numbers.
 
    * - :attr:`~mmkit.Compound.atom_map_to_index`
-     - See below.
+     - Mapping from atom map number to canonical atom index.
 
    * - :attr:`~mmkit.Compound.charge`
-     - See below.
+     - Formal charge of the compound.
 
    * - :attr:`~mmkit.Compound.exact_mass`
-     - See below.
+     - Monoisotopic exact mass of the compound.
 
    * - :attr:`~mmkit.Compound.formula`
-     - See below.
+     - Molecular formula of the compound.
 
    * - :attr:`~mmkit.Compound.mapped_smiles`
-     - See below.
+     - Canonical SMILES string with atom map numbers.
 
    * - :attr:`~mmkit.Compound.mol`
-     - See below.
+     - RDKit molecule without atom map numbers.
 
    * - :attr:`~mmkit.Compound.mol_with_atom_map`
-     - See below.
+     - RDKit molecule with atom map numbers.
 
    * - :attr:`~mmkit.Compound.smiles`
-     - See below.
+     - Canonical SMILES string without atom map numbers.
 
 
 
@@ -51,19 +51,27 @@ Properties
 Methods
 -------
 
-.. autosummary::
-   :nosignatures:
+.. list-table::
+   :header-rows: 1
+   :widths: 30 70
 
+   * - Name
+     - Description
 
-   Compound.__init__
+   * - :meth:`~mmkit.Compound.__init__`
+     - Initialize a compound from an RDKit molecule.
 
-   Compound.assign_atom_map
+   * - :meth:`~mmkit.Compound.assign_atom_map`
+     - Assign atom map numbers to atoms.
 
-   Compound.copy
+   * - :meth:`~mmkit.Compound.copy`
+     - Create a copy of the compound.
 
-   Compound.from_smiles
+   * - :meth:`~mmkit.Compound.from_smiles`
+     - Create a compound from a SMILES string.
 
-   Compound.get_atom_index_from_map
+   * - :meth:`~mmkit.Compound.get_atom_index_from_map`
+     - Get the atom index corresponding to an atom map number.
 
 
 

@@ -21,7 +21,7 @@ Properties
      - Description
 {% for name in attributes %}
    * - :attr:`~{{ module }}.{{ objname }}.{{ name }}`
-     - :summary:`{{ module }}.{{ objname }}.{{ name }}`
+     - {{ get_summary(module, objname, name) }}
 {% endfor %}
 {% endif %}
 
@@ -37,7 +37,7 @@ Methods
      - Description
 {% for name in methods %}
    * - :meth:`~{{ module }}.{{ objname }}.{{ name }}`
-     - :summary:`{{ module }}.{{ objname }}.{{ name }}`
+     - {{ get_summary(module, objname, name) }}
 {% endfor %}
 {% endif %}
 

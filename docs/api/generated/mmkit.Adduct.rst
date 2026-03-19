@@ -19,25 +19,25 @@ Properties
      - Description
 
    * - :attr:`~mmkit.Adduct.adduct_formulas`
-     - See below.
+     - Signed counts of adduct formulas.
 
    * - :attr:`~mmkit.Adduct.charge`
-     - See below.
+     - Net charge of the adduct.
 
    * - :attr:`~mmkit.Adduct.element_diff`
-     - See below.
+     - Total element count difference introduced by the adduct.
 
    * - :attr:`~mmkit.Adduct.formula_diff`
-     - See below.
+     - Net formula difference introduced by the adduct.
 
    * - :attr:`~mmkit.Adduct.ion_type`
-     - See below.
+     - Ion type of the adduct.
 
    * - :attr:`~mmkit.Adduct.mass_shift`
-     - See below.
+     - Exact mass shift introduced by the adduct.
 
    * - :attr:`~mmkit.Adduct.n_molecules`
-     - See below.
+     - Number of neutral molecules.
 
 
 
@@ -45,33 +45,48 @@ Properties
 Methods
 -------
 
-.. autosummary::
-   :nosignatures:
+.. list-table::
+   :header-rows: 1
+   :widths: 30 70
 
+   * - Name
+     - Description
 
-   Adduct.__init__
+   * - :meth:`~mmkit.Adduct.__init__`
+     - Initialize an Adduct.
 
-   Adduct.add
+   * - :meth:`~mmkit.Adduct.add`
+     - Combine this adduct with another adduct.
 
-   Adduct.add_prefer_self
+   * - :meth:`~mmkit.Adduct.add_prefer_self`
+     - Combine two adducts while keeping this adduct's metadata.
 
-   Adduct.apply_to_formula
+   * - :meth:`~mmkit.Adduct.apply_to_formula`
+     - Apply the adduct to a neutral formula.
 
-   Adduct.apply_to_mass
+   * - :meth:`~mmkit.Adduct.apply_to_mass`
+     - Apply the adduct to a neutral mass.
 
-   Adduct.apply_to_mz
+   * - :meth:`~mmkit.Adduct.apply_to_mz`
+     - Apply the adduct to a neutral mass and compute m/z.
 
-   Adduct.copy
+   * - :meth:`~mmkit.Adduct.copy`
+     - Create a copy of the adduct.
 
-   Adduct.decompose_adduct
+   * - :meth:`~mmkit.Adduct.decompose_adduct`
+     - Decompose an adduct into known adduct types and a neutral component.
 
-   Adduct.get_formula_count
+   * - :meth:`~mmkit.Adduct.get_formula_count`
+     - Get the signed count of a specific formula.
 
-   Adduct.parse
+   * - :meth:`~mmkit.Adduct.parse`
+     - Parse an adduct string.
 
-   Adduct.set_charge
+   * - :meth:`~mmkit.Adduct.set_charge`
+     - Set the net charge of the adduct.
 
-   Adduct.split
+   * - :meth:`~mmkit.Adduct.split`
+     - Split the adduct into independent components.
 
 
 

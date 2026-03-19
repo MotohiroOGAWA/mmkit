@@ -19,34 +19,34 @@ Properties
      - Description
 
    * - :attr:`~mmkit.Formula.charge`
-     - See below.
+     - Net charge of the formula.
 
    * - :attr:`~mmkit.Formula.elements`
-     - See below.
+     - Element-count mapping in Hill order.
 
    * - :attr:`~mmkit.Formula.exact_mass`
-     - See below.
+     - Monoisotopic exact mass of the formula.
 
    * - :attr:`~mmkit.Formula.is_nonnegative`
-     - See below.
+     - Whether all element counts are non-negative.
 
    * - :attr:`~mmkit.Formula.normalized`
-     - See below.
+     - Copy with ``raw_formula`` cleared.
 
    * - :attr:`~mmkit.Formula.normalized_plain`
-     - See below.
+     - Copy with zero charge and empty ``raw_formula``.
 
    * - :attr:`~mmkit.Formula.plain`
-     - See below.
+     - Copy of the formula with zero charge.
 
    * - :attr:`~mmkit.Formula.plain_value`
-     - See below.
+     - Canonical formula string without charge.
 
    * - :attr:`~mmkit.Formula.raw_formula`
-     - See below.
+     - Original formula string, if available.
 
    * - :attr:`~mmkit.Formula.value`
-     - See below.
+     - Canonical formula string including charge.
 
 
 
@@ -54,23 +54,33 @@ Properties
 Methods
 -------
 
-.. autosummary::
-   :nosignatures:
+.. list-table::
+   :header-rows: 1
+   :widths: 30 70
 
+   * - Name
+     - Description
 
-   Formula.__init__
+   * - :meth:`~mmkit.Formula.__init__`
+     - Initialize a Formula.
 
-   Formula.copy
+   * - :meth:`~mmkit.Formula.copy`
+     - Create a copy of the formula.
 
-   Formula.empty
+   * - :meth:`~mmkit.Formula.empty`
+     - Return an empty formula.
 
-   Formula.eq
+   * - :meth:`~mmkit.Formula.eq`
+     - Compare two Formula objects with optional raw-string comparison.
 
-   Formula.from_mol
+   * - :meth:`~mmkit.Formula.from_mol`
+     - Create a Formula from an RDKit molecule.
 
-   Formula.parse
+   * - :meth:`~mmkit.Formula.parse`
+     - Parse a formula string into a Formula object.
 
-   Formula.to_string
+   * - :meth:`~mmkit.Formula.to_string`
+     - Convert the formula to a string.
 
 
 
