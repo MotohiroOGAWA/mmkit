@@ -23,14 +23,6 @@ Properties
    * - :attr:`~{{ module }}.{{ objname }}.{{ name }}`
      - {{ name }}
 {% endfor %}
-
-Property Details
-----------------
-
-{% for name in attributes %}
-.. autoattribute:: {{ objname }}.{{ name }}
-
-{% endfor %}
 {% endif %}
 
 {% if methods %}
@@ -47,7 +39,19 @@ Methods
    * - :meth:`~{{ module }}.{{ objname }}.{{ name }}`
      - {{ name }}
 {% endfor %}
+{% endif %}
 
+{% if attributes %}
+Property Details
+----------------
+
+{% for name in attributes %}
+.. autoattribute:: {{ objname }}.{{ name }}
+
+{% endfor %}
+{% endif %}
+
+{% if methods %}
 Method Details
 --------------
 

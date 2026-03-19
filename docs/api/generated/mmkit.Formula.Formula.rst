@@ -49,6 +49,42 @@ Properties
      - value
 
 
+
+
+Methods
+-------
+
+.. list-table::
+   :header-rows: 1
+   :widths: 30 70
+
+   * - Name
+     - Description
+
+   * - :meth:`~mmkit.Formula.Formula.__init__`
+     - __init__
+
+   * - :meth:`~mmkit.Formula.Formula.copy`
+     - copy
+
+   * - :meth:`~mmkit.Formula.Formula.empty`
+     - empty
+
+   * - :meth:`~mmkit.Formula.Formula.eq`
+     - eq
+
+   * - :meth:`~mmkit.Formula.Formula.from_mol`
+     - from_mol
+
+   * - :meth:`~mmkit.Formula.Formula.parse`
+     - parse
+
+   * - :meth:`~mmkit.Formula.Formula.to_string`
+     - to_string
+
+
+
+
 Property Details
 ----------------
 
@@ -86,41 +122,6 @@ Property Details
 
 
 
-Methods
--------
-
-.. list-table::
-   :header-rows: 1
-   :widths: 30 70
-
-   * - Name
-     - Description
-
-   * - :meth:`~mmkit.Formula.Formula.__init__`
-     - __init__
-
-   * - :meth:`~mmkit.Formula.Formula.copy`
-     - copy
-
-   * - :meth:`~mmkit.Formula.Formula.empty`
-     - empty
-
-   * - :meth:`~mmkit.Formula.Formula.eq`
-     - eq
-
-   * - :meth:`~mmkit.Formula.Formula.from_mol`
-     - from_mol
-
-   * - :meth:`~mmkit.Formula.Formula.neutron`
-     - neutron
-
-   * - :meth:`~mmkit.Formula.Formula.parse`
-     - parse
-
-   * - :meth:`~mmkit.Formula.Formula.to_string`
-     - to_string
-
-
 Method Details
 --------------
 
@@ -138,9 +139,6 @@ Method Details
 
 
 .. automethod:: Formula.from_mol
-
-
-.. automethod:: Formula.neutron
 
 
 .. automethod:: Formula.parse

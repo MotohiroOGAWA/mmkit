@@ -40,32 +40,6 @@ Properties
      - n_molecules
 
 
-Property Details
-----------------
-
-
-.. autoattribute:: Adduct.adduct_formulas
-
-
-.. autoattribute:: Adduct.charge
-
-
-.. autoattribute:: Adduct.element_diff
-
-
-.. autoattribute:: Adduct.formula_diff
-
-
-.. autoattribute:: Adduct.ion_type
-
-
-.. autoattribute:: Adduct.mass_shift
-
-
-.. autoattribute:: Adduct.n_molecules
-
-
-
 
 
 Methods
@@ -110,6 +84,36 @@ Methods
 
    * - :meth:`~mmkit.Adduct.Adduct.split`
      - split
+
+
+
+
+Property Details
+----------------
+
+
+.. autoattribute:: Adduct.adduct_formulas
+
+
+.. autoattribute:: Adduct.charge
+
+
+.. autoattribute:: Adduct.element_diff
+
+
+.. autoattribute:: Adduct.formula_diff
+
+
+.. autoattribute:: Adduct.ion_type
+
+
+.. autoattribute:: Adduct.mass_shift
+
+
+.. autoattribute:: Adduct.n_molecules
+
+
+
 
 
 Method Details
