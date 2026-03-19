@@ -73,6 +73,11 @@ class Formula:
         -------
         Formula
             Parsed Formula instance.
+
+        Examples
+        --------
+        >>> Formula.parse("HOH").value
+        'H2O'
         """
         formula_body, charge = cls._split_formula_and_charge(formula_str)
         elements = cls._parse_element_counts(formula_body)
@@ -129,6 +134,8 @@ class Formula:
     @property
     def raw_formula(self) -> str:
         """Return the original formula string."""
+        if self._raw_formula == "":
+            return self.to_string(no_charge=False)
         return self._raw_formula
 
     @property

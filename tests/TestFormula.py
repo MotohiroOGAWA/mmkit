@@ -57,11 +57,11 @@ class TestFormula(unittest.TestCase):
 
     def test_parse_store_raw(self) -> None:
         """Formula.parse should optionally preserve the raw input string."""
-        f1 = Formula.parse("C6H12O6", store_raw=True)
-        f2 = Formula.parse("C6H12O6", store_raw=False)
+        f1 = Formula.parse("C6O6H12", store_raw=True)
+        f2 = Formula.parse("C6O6H12", store_raw=False)
 
-        self.assertEqual(f1.raw_formula, "C6H12O6")
-        self.assertEqual(f2.raw_formula, "")
+        self.assertEqual(f1.raw_formula, "C6O6H12")
+        self.assertEqual(f2.raw_formula, "C6H12O6")
 
     def test_from_mol(self) -> None:
         """Formula.from_mol should build a Formula from an RDKit Mol."""
@@ -152,13 +152,13 @@ class TestFormula(unittest.TestCase):
         """normalized should clear raw_formula but keep charge."""
         f = self.sodium.normalized
         self.assertEqual(f.value, "Na+")
-        self.assertEqual(f.raw_formula, "")
+        self.assertEqual(f._raw_formula, "")
 
     def test_normalized_plain(self) -> None:
         """normalized_plain should clear both raw_formula and charge."""
         f = self.sodium.normalized_plain
         self.assertEqual(f.value, "Na")
-        self.assertEqual(f.raw_formula, "")
+        self.assertEqual(f._raw_formula, "")
         self.assertEqual(f.charge, 0)
 
     # ------------------------------------------------------------------

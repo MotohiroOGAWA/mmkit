@@ -1,10 +1,11 @@
 API Reference
 =============
 
-Formula module
---------------
+Modules
+-------
 
-.. automodule:: mmkit.Formula
-   :members:
-   :undoc-members:
-   :show-inheritance:
+.. toctree::
+   :maxdepth: 2
+
+   api/formula
+   api/adduct
