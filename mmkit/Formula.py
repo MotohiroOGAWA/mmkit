@@ -119,8 +119,8 @@ class Formula:
 
         return cls(elements=elements, charge=total_charge)
 
-    @staticmethod
-    def empty() -> "Formula":
+    @classmethod
+    def empty(cls) -> "Formula":
         """
         Return an empty formula.
 
@@ -129,7 +129,7 @@ class Formula:
         Formula
             Formula with no elements and zero charge.
         """
-        return Formula(elements={}, charge=0)
+        return cls(elements={}, charge=0)
 
     # ------------------------------------------------------------------
     # Properties
