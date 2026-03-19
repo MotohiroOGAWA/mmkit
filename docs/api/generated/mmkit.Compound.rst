@@ -11,39 +11,27 @@
 Properties
 ----------
 
-.. list-table::
-   :header-rows: 1
-   :widths: 30 70
+.. autosummary::
+   :nosignatures:
 
-   * - Name
-     - Description
 
-   * - :attr:`~mmkit.Compound.atom_index_mapped_smiles`
-     - atom_index_mapped_smiles
+   Compound.atom_index_mapped_smiles
 
-   * - :attr:`~mmkit.Compound.atom_map_to_index`
-     - atom_map_to_index
+   Compound.atom_map_to_index
 
-   * - :attr:`~mmkit.Compound.charge`
-     - charge
+   Compound.charge
 
-   * - :attr:`~mmkit.Compound.exact_mass`
-     - exact_mass
+   Compound.exact_mass
 
-   * - :attr:`~mmkit.Compound.formula`
-     - formula
+   Compound.formula
 
-   * - :attr:`~mmkit.Compound.mapped_smiles`
-     - mapped_smiles
+   Compound.mapped_smiles
 
-   * - :attr:`~mmkit.Compound.mol`
-     - mol
+   Compound.mol
 
-   * - :attr:`~mmkit.Compound.mol_with_atom_map`
-     - mol_with_atom_map
+   Compound.mol_with_atom_map
 
-   * - :attr:`~mmkit.Compound.smiles`
-     - smiles
+   Compound.smiles
 
 
 
@@ -51,27 +39,19 @@ Properties
 Methods
 -------
 
-.. list-table::
-   :header-rows: 1
-   :widths: 30 70
+.. autosummary::
+   :nosignatures:
 
-   * - Name
-     - Description
 
-   * - :meth:`~mmkit.Compound.__init__`
-     - __init__
+   Compound.__init__
 
-   * - :meth:`~mmkit.Compound.assign_atom_map`
-     - assign_atom_map
+   Compound.assign_atom_map
 
-   * - :meth:`~mmkit.Compound.copy`
-     - copy
+   Compound.copy
 
-   * - :meth:`~mmkit.Compound.from_smiles`
-     - from_smiles
+   Compound.from_smiles
 
-   * - :meth:`~mmkit.Compound.get_atom_index_from_map`
-     - get_atom_index_from_map
+   Compound.get_atom_index_from_map
 
 
 

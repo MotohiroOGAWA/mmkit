@@ -11,42 +11,29 @@
 Properties
 ----------
 
-.. list-table::
-   :header-rows: 1
-   :widths: 30 70
+.. autosummary::
+   :nosignatures:
 
-   * - Name
-     - Description
 
-   * - :attr:`~mmkit.Formula.charge`
-     - charge
+   Formula.charge
 
-   * - :attr:`~mmkit.Formula.elements`
-     - elements
+   Formula.elements
 
-   * - :attr:`~mmkit.Formula.exact_mass`
-     - exact_mass
+   Formula.exact_mass
 
-   * - :attr:`~mmkit.Formula.is_nonnegative`
-     - is_nonnegative
+   Formula.is_nonnegative
 
-   * - :attr:`~mmkit.Formula.normalized`
-     - normalized
+   Formula.normalized
 
-   * - :attr:`~mmkit.Formula.normalized_plain`
-     - normalized_plain
+   Formula.normalized_plain
 
-   * - :attr:`~mmkit.Formula.plain`
-     - plain
+   Formula.plain
 
-   * - :attr:`~mmkit.Formula.plain_value`
-     - plain_value
+   Formula.plain_value
 
-   * - :attr:`~mmkit.Formula.raw_formula`
-     - raw_formula
+   Formula.raw_formula
 
-   * - :attr:`~mmkit.Formula.value`
-     - value
+   Formula.value
 
 
 
@@ -54,33 +41,23 @@ Properties
 Methods
 -------
 
-.. list-table::
-   :header-rows: 1
-   :widths: 30 70
+.. autosummary::
+   :nosignatures:
 
-   * - Name
-     - Description
 
-   * - :meth:`~mmkit.Formula.__init__`
-     - __init__
+   Formula.__init__
 
-   * - :meth:`~mmkit.Formula.copy`
-     - copy
+   Formula.copy
 
-   * - :meth:`~mmkit.Formula.empty`
-     - empty
+   Formula.empty
 
-   * - :meth:`~mmkit.Formula.eq`
-     - eq
+   Formula.eq
 
-   * - :meth:`~mmkit.Formula.from_mol`
-     - from_mol
+   Formula.from_mol
 
-   * - :meth:`~mmkit.Formula.parse`
-     - parse
+   Formula.parse
 
-   * - :meth:`~mmkit.Formula.to_string`
-     - to_string
+   Formula.to_string
 
 
 

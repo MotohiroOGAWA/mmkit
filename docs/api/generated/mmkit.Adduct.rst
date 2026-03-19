@@ -11,33 +11,23 @@
 Properties
 ----------
 
-.. list-table::
-   :header-rows: 1
-   :widths: 30 70
+.. autosummary::
+   :nosignatures:
 
-   * - Name
-     - Description
 
-   * - :attr:`~mmkit.Adduct.adduct_formulas`
-     - adduct_formulas
+   Adduct.adduct_formulas
 
-   * - :attr:`~mmkit.Adduct.charge`
-     - charge
+   Adduct.charge
 
-   * - :attr:`~mmkit.Adduct.element_diff`
-     - element_diff
+   Adduct.element_diff
 
-   * - :attr:`~mmkit.Adduct.formula_diff`
-     - formula_diff
+   Adduct.formula_diff
 
-   * - :attr:`~mmkit.Adduct.ion_type`
-     - ion_type
+   Adduct.ion_type
 
-   * - :attr:`~mmkit.Adduct.mass_shift`
-     - mass_shift
+   Adduct.mass_shift
 
-   * - :attr:`~mmkit.Adduct.n_molecules`
-     - n_molecules
+   Adduct.n_molecules
 
 
 
@@ -45,45 +35,33 @@ Properties
 Methods
 -------
 
-.. list-table::
-   :header-rows: 1
-   :widths: 30 70
+.. autosummary::
+   :nosignatures:
 
-   * - Name
-     - Description
 
-   * - :meth:`~mmkit.Adduct.__init__`
-     - __init__
+   Adduct.__init__
 
-   * - :meth:`~mmkit.Adduct.add`
-     - add
+   Adduct.add
 
-   * - :meth:`~mmkit.Adduct.add_prefer_self`
-     - add_prefer_self
+   Adduct.add_prefer_self
 
-   * - :meth:`~mmkit.Adduct.apply_to_formula`
-     - apply_to_formula
+   Adduct.apply_to_formula
 
-   * - :meth:`~mmkit.Adduct.apply_to_mass`
-     - apply_to_mass
+   Adduct.apply_to_mass
 
-   * - :meth:`~mmkit.Adduct.apply_to_mz`
-     - apply_to_mz
+   Adduct.apply_to_mz
 
-   * - :meth:`~mmkit.Adduct.copy`
-     - copy
+   Adduct.copy
 
-   * - :meth:`~mmkit.Adduct.get_formula_count`
-     - get_formula_count
+   Adduct.decompose_adduct
 
-   * - :meth:`~mmkit.Adduct.parse`
-     - parse
+   Adduct.get_formula_count
 
-   * - :meth:`~mmkit.Adduct.set_charge`
-     - set_charge
+   Adduct.parse
 
-   * - :meth:`~mmkit.Adduct.split`
-     - split
+   Adduct.set_charge
+
+   Adduct.split
 
 
 
@@ -139,6 +117,9 @@ Method Details
 
 
 .. automethod:: Adduct.copy
+
+
+.. automethod:: Adduct.decompose_adduct
 
 
 .. automethod:: Adduct.get_formula_count
