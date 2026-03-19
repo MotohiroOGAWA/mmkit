@@ -13,11 +13,23 @@
 Properties
 ----------
 
-.. autosummary::
-   :nosignatures:
+.. list-table::
+   :header-rows: 1
+   :widths: 30 70
+
+   * - Name
+     - Description
+{% for name in attributes %}
+   * - :attr:`~{{ module }}.{{ objname }}.{{ name }}`
+     - {{ name }}
+{% endfor %}
+
+Property Details
+----------------
 
 {% for name in attributes %}
-   ~{{ objname }}.{{ name }}
+.. autoattribute:: {{ objname }}.{{ name }}
+
 {% endfor %}
 {% endif %}
 
@@ -25,10 +37,22 @@ Properties
 Methods
 -------
 
-.. autosummary::
-   :nosignatures:
+.. list-table::
+   :header-rows: 1
+   :widths: 30 70
+
+   * - Name
+     - Description
+{% for name in methods %}
+   * - :meth:`~{{ module }}.{{ objname }}.{{ name }}`
+     - {{ name }}
+{% endfor %}
+
+Method Details
+--------------
 
 {% for name in methods %}
-   ~{{ objname }}.{{ name }}
+.. automethod:: {{ objname }}.{{ name }}
+
 {% endfor %}
 {% endif %}

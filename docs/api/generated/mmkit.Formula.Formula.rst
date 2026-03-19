@@ -11,29 +11,77 @@
 Properties
 ----------
 
-.. autosummary::
-   :nosignatures:
+.. list-table::
+   :header-rows: 1
+   :widths: 30 70
+
+   * - Name
+     - Description
+
+   * - :attr:`~mmkit.Formula.Formula.charge`
+     - charge
+
+   * - :attr:`~mmkit.Formula.Formula.elements`
+     - elements
+
+   * - :attr:`~mmkit.Formula.Formula.exact_mass`
+     - exact_mass
+
+   * - :attr:`~mmkit.Formula.Formula.is_nonnegative`
+     - is_nonnegative
+
+   * - :attr:`~mmkit.Formula.Formula.normalized`
+     - normalized
+
+   * - :attr:`~mmkit.Formula.Formula.normalized_plain`
+     - normalized_plain
+
+   * - :attr:`~mmkit.Formula.Formula.plain`
+     - plain
+
+   * - :attr:`~mmkit.Formula.Formula.plain_value`
+     - plain_value
+
+   * - :attr:`~mmkit.Formula.Formula.raw_formula`
+     - raw_formula
+
+   * - :attr:`~mmkit.Formula.Formula.value`
+     - value
 
 
-   ~Formula.charge
+Property Details
+----------------
 
-   ~Formula.elements
 
-   ~Formula.exact_mass
+.. autoattribute:: Formula.charge
 
-   ~Formula.is_nonnegative
 
-   ~Formula.normalized
+.. autoattribute:: Formula.elements
 
-   ~Formula.normalized_plain
 
-   ~Formula.plain
+.. autoattribute:: Formula.exact_mass
 
-   ~Formula.plain_value
 
-   ~Formula.raw_formula
+.. autoattribute:: Formula.is_nonnegative
 
-   ~Formula.value
+
+.. autoattribute:: Formula.normalized
+
+
+.. autoattribute:: Formula.normalized_plain
+
+
+.. autoattribute:: Formula.plain
+
+
+.. autoattribute:: Formula.plain_value
+
+
+.. autoattribute:: Formula.raw_formula
+
+
+.. autoattribute:: Formula.value
+
 
 
 
@@ -41,23 +89,63 @@ Properties
 Methods
 -------
 
-.. autosummary::
-   :nosignatures:
+.. list-table::
+   :header-rows: 1
+   :widths: 30 70
+
+   * - Name
+     - Description
+
+   * - :meth:`~mmkit.Formula.Formula.__init__`
+     - __init__
+
+   * - :meth:`~mmkit.Formula.Formula.copy`
+     - copy
+
+   * - :meth:`~mmkit.Formula.Formula.empty`
+     - empty
+
+   * - :meth:`~mmkit.Formula.Formula.eq`
+     - eq
+
+   * - :meth:`~mmkit.Formula.Formula.from_mol`
+     - from_mol
+
+   * - :meth:`~mmkit.Formula.Formula.neutron`
+     - neutron
+
+   * - :meth:`~mmkit.Formula.Formula.parse`
+     - parse
+
+   * - :meth:`~mmkit.Formula.Formula.to_string`
+     - to_string
 
 
-   ~Formula.__init__
+Method Details
+--------------
 
-   ~Formula.copy
 
-   ~Formula.empty
+.. automethod:: Formula.__init__
 
-   ~Formula.eq
 
-   ~Formula.from_mol
+.. automethod:: Formula.copy
 
-   ~Formula.neutron
 
-   ~Formula.parse
+.. automethod:: Formula.empty
 
-   ~Formula.to_string
+
+.. automethod:: Formula.eq
+
+
+.. automethod:: Formula.from_mol
+
+
+.. automethod:: Formula.neutron
+
+
+.. automethod:: Formula.parse
+
+
+.. automethod:: Formula.to_string
+
 
