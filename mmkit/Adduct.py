@@ -658,112 +658,96 @@ class Adduct:
 
         return tuple(result)
 
-    @staticmethod
-    def decompose_adduct(
+    @classmethod
+    def split_by_reference_adducts(
+        cls,
         adduct: "Adduct",
         reference_adducts: Tuple["Adduct", ...],
-    ) -> Tuple[Dict["Adduct", int], "Adduct"]:
+    ) -> Tuple[Tuple[bool, ...], "Adduct"]:
         """
-        Decompose an adduct into known adduct types and a neutral component.
+        Split an adduct into reference-matched flags and a residual component.
 
-        Parameters
-        ----------
-        adduct : Adduct
-            Target adduct to decompose.
-        reference_adducts : tuple[Adduct, ...]
-            Supported adduct types used for matching.
+        The first returned value has the same length as reference_adducts.
+        Each boolean indicates whether the corresponding reference adduct matched.
 
-        Returns
-        -------
-        tuple[dict[Adduct, int], Adduct]
-            - Mapping from supported adduct type to count.
-            - Remaining neutral component (charge = 0).
+        A reference adduct matches only when:
+        - ion_type is the same
+        - n_molecules is the same
+        - charge direction is the same
+        - all formula counts in the reference adduct exactly match the target adduct
 
-        Raises
-        ------
-        ValueError
-            If an unsupported adduct formula is encountered.
-        NotImplementedError
-            If negative adduct decomposition is requested.
+        Examples
+        --------
+        adduct = [M+2Na]+
+        reference = [M+Na]+
+        -> not matched
+
+        adduct = [M+2Na]+
+        reference = [M+2Na]+
+        -> matched
         """
-        from collections import defaultdict
 
-        # Frequently used neutral formulas
-        h2o = Formula.parse("H2O")
-        neutron = Formula.parse("+n")
-
-        # Result: supported adduct composition
-        adduct_composition: Dict[Adduct, int] = defaultdict(int)
-
-        # Neutral components (added / removed)
-        neutral_in: List[Formula] = []
-        neutral_out: List[Formula] = []
-
-        # ------------------------------------------------------------------
-        # Positive mode
-        # ------------------------------------------------------------------
-        if adduct.charge > 0:
-            # Build lookup: formula string → supported adduct
-            supported_lookup = {
-                str(ref.formula_diff): ref
-                for ref in reference_adducts
-                if ref.charge > 0
-            }
-
-            # Iterate over all sub-formulas in the adduct
-            for formula, count in adduct._adduct_formulas.items():
-                if count == 0:
-                    continue
-
-                formula_str = str(formula)
-
-                # ----------------------------------------------------------
-                # Case 1: supported adduct type
-                # ----------------------------------------------------------
-                if formula_str in supported_lookup:
-                    adduct_type = supported_lookup[formula_str]
-                    adduct_composition[adduct_type] += count
-                    continue
-
-                # ----------------------------------------------------------
-                # Case 2: neutral or special species
-                # ----------------------------------------------------------
-                if count > 0:
-                    if formula in (h2o, neutron):
-                        neutral_in.extend([formula.copy()] * count)
-                    else:
-                        raise ValueError(
-                            f"Unsupported positive adduct formula: {formula} in {adduct}"
-                        )
-                else:
-                    neutral_out.extend([formula.copy()] * (-count))
-
-        # ------------------------------------------------------------------
-        # Negative mode (not implemented)
-        # ------------------------------------------------------------------
-        elif adduct.charge < 0:
-            raise NotImplementedError("Negative adduct decomposition is not implemented.")
-
-        # ------------------------------------------------------------------
-        # Neutral (invalid)
-        # ------------------------------------------------------------------
-        else:
+        if adduct.charge == 0:
             raise ValueError(f"Adduct must have non-zero charge: {adduct}")
 
-        # ------------------------------------------------------------------
-        # Build neutral component (charge = 0)
-        # ------------------------------------------------------------------
-        neutral_component = Adduct(
+        remaining_formula_counts = dict(adduct._adduct_formulas)
+
+        matched_flags: list[bool] = []
+
+        for reference_adduct in reference_adducts:
+            is_same_base_adduct = (
+                reference_adduct.ion_type == adduct.ion_type
+                and reference_adduct.n_molecules == adduct.n_molecules
+                and reference_adduct.charge * adduct.charge > 0
+            )
+
+            if not is_same_base_adduct:
+                matched_flags.append(False)
+                continue
+
+            reference_formula_counts = {
+                formula: count
+                for formula, count in reference_adduct._adduct_formulas.items()
+                if count != 0
+            }
+
+            is_matched = True
+
+            for formula, reference_count in reference_formula_counts.items():
+                target_count = remaining_formula_counts.get(formula, 0)
+
+                if target_count != reference_count:
+                    is_matched = False
+                    break
+
+            if not is_matched:
+                matched_flags.append(False)
+                continue
+
+            matched_flags.append(True)
+
+            for formula, reference_count in reference_formula_counts.items():
+                remaining_formula_counts[formula] -= reference_count
+
+        residuals_in: list[Formula] = []
+        residuals_out: list[Formula] = []
+
+        for formula, count in remaining_formula_counts.items():
+            if count == 0:
+                continue
+
+            if count > 0:
+                residuals_in.extend([formula.copy()] * count)
+            else:
+                residuals_out.extend([formula.copy()] * (-count))
+
+        residual_component = cls(
             ion_type=adduct._ion_type,
-            n_molecules=adduct._n_molecules,
-            adducts_in=neutral_in,
-            adducts_out=neutral_out,
+            n_molecules=1,
+            adducts_in=residuals_in,
+            adducts_out=residuals_out,
             charge=0,
         )
 
-        # Sort output for deterministic behavior
-        adduct_composition = dict(
-            sorted(adduct_composition.items(), key=lambda x: str(x[0]))
-        )
-
-        return adduct_composition, neutral_component
+        matched_adduct_flags = tuple(matched_flags)
+        return matched_adduct_flags, residual_component

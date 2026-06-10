@@ -239,6 +239,311 @@ class TestAdduct(unittest.TestCase):
         self.assertIn("[M+Na]", [str(x) for x in parts])
         self.assertIn("[M-H2O]", [str(x) for x in parts])
 
+    def test_split_by_reference_adducts_positive_single_match(self):
+        adduct = Adduct.parse("[M+H]+")
+        reference_adducts = (
+            Adduct.parse("[M+H]+"),
+            Adduct.parse("[M+Na]+"),
+            Adduct.parse("[M+NH4]+"),
+            Adduct.parse("[M-H]-"),
+        )
+
+        matched_flags, residual_component = Adduct.split_by_reference_adducts(
+            adduct=adduct,
+            reference_adducts=reference_adducts,
+        )
+
+        self.assertEqual(len(matched_flags), len(reference_adducts))
+        self.assertEqual(matched_flags, (True, False, False, False))
+
+        self.assertEqual(residual_component.charge, 0)
+        self.assertEqual(str(residual_component), "[M]")
+
+    def test_split_by_reference_adducts_positive_multiple_matches(self):
+        adduct = Adduct.parse("[M+H+Na+NH4]+")
+        reference_adducts = (
+            Adduct.parse("[M+H]+"),
+            Adduct.parse("[M+Na]+"),
+            Adduct.parse("[M+NH4]+"),
+            Adduct.parse("[M-H]-"),
+        )
+
+        matched_flags, residual_component = Adduct.split_by_reference_adducts(
+            adduct=adduct,
+            reference_adducts=reference_adducts,
+        )
+
+        self.assertEqual(len(matched_flags), len(reference_adducts))
+        self.assertEqual(matched_flags, (True, True, True, False))
+
+        self.assertEqual(residual_component.charge, 0)
+        self.assertEqual(str(residual_component), "[M]")
+
+    def test_split_by_reference_adducts_positive_with_residual_loss(self):
+        adduct = Adduct.parse("[M+H-H2O]+")
+        reference_adducts = (
+            Adduct.parse("[M+H]+"),
+            Adduct.parse("[M+Na]+"),
+            Adduct.parse("[M+NH4]+"),
+            Adduct.parse("[M-H]-"),
+        )
+
+        matched_flags, residual_component = Adduct.split_by_reference_adducts(
+            adduct=adduct,
+            reference_adducts=reference_adducts,
+        )
+
+        self.assertEqual(matched_flags, (True, False, False, False))
+
+        self.assertEqual(residual_component.charge, 0)
+        self.assertEqual(residual_component.get_formula_count("H2O"), -1)
+        self.assertEqual(str(residual_component), "[M-H2O]")
+
+    def test_split_by_reference_adducts_positive_with_residual_addition(self):
+        adduct = Adduct.parse("[M+H+H2O]+")
+        reference_adducts = (
+            Adduct.parse("[M+H]+"),
+            Adduct.parse("[M+Na]+"),
+            Adduct.parse("[M+NH4]+"),
+            Adduct.parse("[M-H]-"),
+        )
+
+        matched_flags, residual_component = Adduct.split_by_reference_adducts(
+            adduct=adduct,
+            reference_adducts=reference_adducts,
+        )
+
+        self.assertEqual(matched_flags, (True, False, False, False))
+
+        self.assertEqual(residual_component.charge, 0)
+        self.assertEqual(residual_component.get_formula_count("H2O"), 1)
+        self.assertEqual(str(residual_component), "[M+H2O]")
+
+    def test_split_by_reference_adducts_uses_same_ion_mode_reference_only(self):
+        adduct = Adduct.parse("[M-H]-")
+        reference_adducts = (
+            Adduct.parse("[M+H]+"),
+            Adduct.parse("[M+Na]+"),
+            Adduct.parse("[M+NH4]+"),
+            Adduct.parse("[M-H]-"),
+        )
+
+        matched_flags, residual_component = Adduct.split_by_reference_adducts(
+            adduct=adduct,
+            reference_adducts=reference_adducts,
+        )
+
+        self.assertEqual(matched_flags, (False, False, False, True))
+
+        self.assertEqual(residual_component.charge, 0)
+        self.assertEqual(str(residual_component), "[M]")
+
+    def test_split_by_reference_adducts_does_not_use_opposite_ion_mode_reference(self):
+        adduct = Adduct.parse("[M-H]-")
+        reference_adducts = (
+            Adduct.parse("[M+H]+"),
+            Adduct.parse("[M+Na]+"),
+            Adduct.parse("[M+NH4]+"),
+        )
+
+        matched_flags, residual_component = Adduct.split_by_reference_adducts(
+            adduct=adduct,
+            reference_adducts=reference_adducts,
+        )
+
+        self.assertEqual(matched_flags, (False, False, False))
+
+        self.assertEqual(residual_component.charge, 0)
+        self.assertEqual(residual_component.get_formula_count("H"), -1)
+        self.assertEqual(str(residual_component), "[M-H]")
+
+    def test_split_by_reference_adducts_positive_does_not_use_negative_reference(self):
+        adduct = Adduct.parse("[M+H]+")
+        reference_adducts = (
+            Adduct.parse("[M-H]-"),
+        )
+
+        matched_flags, residual_component = Adduct.split_by_reference_adducts(
+            adduct=adduct,
+            reference_adducts=reference_adducts,
+        )
+
+        self.assertEqual(matched_flags, (False,))
+
+        self.assertEqual(residual_component.charge, 0)
+        self.assertEqual(residual_component.get_formula_count("H"), 1)
+        self.assertEqual(str(residual_component), "[M+H]")
+
+    def test_split_by_reference_adducts_does_not_decompose_repeated_formula_into_single_reference(self):
+        adduct = Adduct.parse("[M+H+H]+")
+        reference_adducts = (
+            Adduct.parse("[M+H]+"),
+            Adduct.parse("[M+Na]+"),
+            Adduct.parse("[M-H]-"),
+        )
+
+        matched_flags, residual_component = Adduct.split_by_reference_adducts(
+            adduct=adduct,
+            reference_adducts=reference_adducts,
+        )
+
+        self.assertEqual(matched_flags, (False, False, False))
+
+        self.assertEqual(residual_component.charge, 0)
+        self.assertEqual(residual_component.get_formula_count("H"), 2)
+        self.assertEqual(str(residual_component), "[M+2H]")
+
+    def test_split_by_reference_adducts_handles_mixed_matched_and_unmatched_formulas(self):
+        adduct = Adduct.parse("[M+H+Na-H2O+CH3OH]+")
+        reference_adducts = (
+            Adduct.parse("[M+H]+"),
+            Adduct.parse("[M+Na]+"),
+            Adduct.parse("[M+NH4]+"),
+            Adduct.parse("[M-H]-"),
+        )
+
+        matched_flags, residual_component = Adduct.split_by_reference_adducts(
+            adduct=adduct,
+            reference_adducts=reference_adducts,
+        )
+
+        self.assertEqual(matched_flags, (True, True, False, False))
+
+        self.assertEqual(residual_component.charge, 0)
+        self.assertEqual(residual_component.get_formula_count("H2O"), -1)
+        self.assertEqual(residual_component.get_formula_count("CH3OH"), 1)
+
+    def test_split_by_reference_adducts_keeps_reference_order_in_flags(self):
+        adduct = Adduct.parse("[M+NH4+H+Na]+")
+        reference_adducts = (
+            Adduct.parse("[M+Na]+"),
+            Adduct.parse("[M+NH4]+"),
+            Adduct.parse("[M+H]+"),
+        )
+
+        matched_flags, residual_component = Adduct.split_by_reference_adducts(
+            adduct=adduct,
+            reference_adducts=reference_adducts,
+        )
+
+        self.assertEqual(len(matched_flags), len(reference_adducts))
+        self.assertEqual(matched_flags, (True, True, True))
+
+        self.assertEqual(residual_component.charge, 0)
+        self.assertEqual(str(residual_component), "[M]")
+
+    def test_split_by_reference_adducts_does_not_match_reference_with_different_n_molecules(self):
+        adduct = Adduct.parse("[2M+H-H2O]+")
+        reference_adducts = (
+            Adduct.parse("[M+H]+"),
+        )
+
+        matched_flags, residual_component = Adduct.split_by_reference_adducts(
+            adduct=adduct,
+            reference_adducts=reference_adducts,
+        )
+
+        self.assertEqual(matched_flags, (False,))
+
+        self.assertEqual(residual_component.ion_type, "M")
+        self.assertEqual(residual_component.n_molecules, 1)
+        self.assertEqual(residual_component.charge, 0)
+        self.assertEqual(residual_component.get_formula_count("H"), 1)
+        self.assertEqual(residual_component.get_formula_count("H2O"), -1)
+        self.assertEqual(str(residual_component), "[M-H2O+H]")
+
+    def test_split_by_reference_adducts_matches_reference_with_same_n_molecules(self):
+        adduct = Adduct.parse("[2M+H-H2O]+")
+        reference_adducts = (
+            Adduct.parse("[2M+H]+"),
+            Adduct.parse("[M+H]+"),
+        )
+
+        matched_flags, residual_component = Adduct.split_by_reference_adducts(
+            adduct=adduct,
+            reference_adducts=reference_adducts,
+        )
+
+        self.assertEqual(matched_flags, (True, False))
+
+        self.assertEqual(residual_component.ion_type, "M")
+        self.assertEqual(residual_component.n_molecules, 1)
+        self.assertEqual(residual_component.charge, 0)
+        self.assertEqual(residual_component.get_formula_count("H2O"), -1)
+        self.assertEqual(str(residual_component), "[M-H2O]")
+
+    def test_split_by_reference_adducts_matches_reference_with_multiple_same_formula_count(self):
+        adduct = Adduct.parse("[M+2Na-H2O]+")
+        reference_adducts = (
+            Adduct.parse("[M+2Na]+"),
+            Adduct.parse("[M+Na]+"),
+            Adduct.parse("[M+H]+"),
+        )
+
+        matched_flags, residual_component = Adduct.split_by_reference_adducts(
+            adduct=adduct,
+            reference_adducts=reference_adducts,
+        )
+
+        self.assertEqual(matched_flags, (True, False, False))
+
+        self.assertEqual(residual_component.charge, 0)
+        self.assertEqual(residual_component.get_formula_count("H2O"), -1)
+        self.assertEqual(str(residual_component), "[M-H2O]")
+
+    def test_split_by_reference_adducts_does_not_decompose_multiple_formula_into_single_reference_count(self):
+        adduct = Adduct.parse("[M+2Na-H2O]+")
+        reference_adducts = (
+            Adduct.parse("[M+Na]+"),
+        )
+
+        matched_flags, residual_component = Adduct.split_by_reference_adducts(
+            adduct=adduct,
+            reference_adducts=reference_adducts,
+        )
+
+        self.assertEqual(matched_flags, (False,))
+
+        self.assertEqual(residual_component.charge, 0)
+        self.assertEqual(residual_component.get_formula_count("Na"), 2)
+        self.assertEqual(residual_component.get_formula_count("H2O"), -1)
+        self.assertEqual(str(residual_component), "[M+2Na-H2O]")
+
+    def test_split_by_reference_adducts_does_not_match_reference_with_larger_formula_count(self):
+        adduct = Adduct.parse("[M+Na-H2O]+")
+        reference_adducts = (
+            Adduct.parse("[M+2Na]+"),
+        )
+
+        matched_flags, residual_component = Adduct.split_by_reference_adducts(
+            adduct=adduct,
+            reference_adducts=reference_adducts,
+        )
+
+        self.assertEqual(matched_flags, (False,))
+
+        self.assertEqual(residual_component.ion_type, "M")
+        self.assertEqual(residual_component.n_molecules, 1)
+        self.assertEqual(residual_component.charge, 0)
+        self.assertEqual(residual_component.get_formula_count("Na"), 1)
+        self.assertEqual(residual_component.get_formula_count("H2O"), -1)
+        self.assertEqual(str(residual_component), "[M+Na-H2O]")
+
+    def test_split_by_reference_adducts_with_no_reference_adducts(self):
+        adduct = Adduct.parse("[M+H+Na-H2O]+")
+        reference_adducts = tuple()
+
+        matched_flags, residual_component = Adduct.split_by_reference_adducts(
+            adduct=adduct,
+            reference_adducts=reference_adducts,
+        )
+
+        self.assertEqual(matched_flags, tuple())
+
+        self.assertEqual(residual_component.charge, 0)
+        self.assertEqual(residual_component.get_formula_count("H"), 1)
+        self.assertEqual(residual_component.get_formula_count("Na"), 1)
+        self.assertEqual(residual_component.get_formula_count("H2O"), -1)
 
 if __name__ == "__main__":
     unittest.main()

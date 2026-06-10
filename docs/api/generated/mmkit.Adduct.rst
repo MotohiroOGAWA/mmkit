@@ -73,8 +73,8 @@ Methods
    * - :meth:`~mmkit.Adduct.copy`
      - Create a copy of the adduct.
 
-   * - :meth:`~mmkit.Adduct.decompose_adduct`
-     - Decompose an adduct into known adduct types and a neutral component.
+   * - :meth:`~mmkit.Adduct.split_by_reference_adducts`
+     - Split an adduct into components matched to reference adducts and a residual component.
 
    * - :meth:`~mmkit.Adduct.get_formula_count`
      - Get the signed count of a specific formula.
@@ -144,7 +144,7 @@ Method Details
 .. automethod:: Adduct.copy
 
 
-.. automethod:: Adduct.decompose_adduct
+.. automethod:: Adduct.split_by_reference_adducts
 
 
 .. automethod:: Adduct.get_formula_count
