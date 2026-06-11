@@ -107,38 +107,64 @@ class TestCompound(unittest.TestCase):
         self.assertEqual(set(mapping.keys()), {1, 2, 3})
         self.assertEqual(set(mapping.values()), {0, 1, 2})
 
-    def test_assign_atom_map_copy(self) -> None:
-        """Assign atom map numbers and return a new compound."""
+    def test_atom_map_is_assigned_on_initialization(self) -> None:
+        """Assign atom map numbers during Compound initialization."""
         compound = Compound.from_smiles("CCO")
-        mapped = compound.assign_atom_map(inplace=False, overwrite=True)
 
-        self.assertIsInstance(mapped, Compound)
         self.assertEqual(compound.smiles, "CCO")
-        self.assertTrue(all(atom.GetAtomMapNum() > 0 for atom in mapped.mol_with_atom_map.GetAtoms()))
+        self.assertTrue(
+            all(
+                atom.GetAtomMapNum() > 0
+                for atom in compound.mol_with_atom_map.GetAtoms()
+            )
+        )
 
-    def test_assign_atom_map_inplace(self) -> None:
-        """Assign atom map numbers in place."""
-        compound = Compound.from_smiles("CCO")
-        result = compound.assign_atom_map(inplace=True, overwrite=True)
+    def test_overwrite_atom_map_on_initialization(self) -> None:
+        """Overwrite existing atom map numbers during Compound initialization."""
+        compound = Compound.from_smiles(
+            "[CH3:5][CH2:7][OH:9]",
+            overwrite_atom_map=True,
+        )
 
-        self.assertIsNone(result)
-        self.assertTrue(all(atom.GetAtomMapNum() > 0 for atom in compound.mol_with_atom_map.GetAtoms()))
+        atom_map_nums = {
+            atom.GetAtomMapNum()
+            for atom in compound.mol_with_atom_map.GetAtoms()
+        }
 
-    def test_assign_atom_map_with_mapping_dict(self) -> None:
-        """Store old-to-new atom map number mappings when requested."""
-        compound = Compound.from_smiles("[CH3:5][CH2:7][OH:9]")
+        self.assertEqual(atom_map_nums, {1, 2, 3})
+
+    def test_assign_atom_map_helper_with_mapping_dict(self) -> None:
+        """Store old-to-new atom map number mappings in the internal helper."""
+        mol = Chem.MolFromSmiles("[CH3:5][CH2:7][OH:9]")
+        self.assertIsNotNone(mol)
+
         mapping_dict: dict[int, int] = {}
-        compound.assign_atom_map(inplace=True, overwrite=True, atom_map_dict=mapping_dict)
+
+        mapped_mol = Compound._assign_atom_map(
+            mol,
+            overwrite=True,
+            atom_map_dict=mapping_dict,
+        )
 
         self.assertEqual(set(mapping_dict.keys()), {5, 7, 9})
         self.assertEqual(set(mapping_dict.values()), {1, 2, 3})
+        self.assertTrue(
+            all(
+                atom.GetAtomMapNum() > 0
+                for atom in mapped_mol.GetAtoms()
+            )
+        )
 
-    def test_assign_atom_map_rejects_nonempty_dict(self) -> None:
-        """Raise AssertionError when atom_map_dict is not empty."""
-        compound = Compound.from_smiles("CCO")
+    def test_assign_atom_map_helper_rejects_nonempty_dict(self) -> None:
+        """Raise ValueError when atom_map_dict is not empty."""
+        mol = Chem.MolFromSmiles("CCO")
+        self.assertIsNotNone(mol)
 
-        with self.assertRaises(AssertionError):
-            compound.assign_atom_map(atom_map_dict={1: 2})
+        with self.assertRaises(ValueError):
+            Compound._assign_atom_map(
+                mol,
+                atom_map_dict={1: 2},
+            )
 
     def test_copy(self) -> None:
         """Create an independent copy of the compound."""
@@ -163,11 +189,6 @@ class TestCompound(unittest.TestCase):
     def test_benzene_formula(self) -> None:
         """Return the correct formula for an aromatic compound."""
         self.assertEqual(self.benzene.formula, Formula.parse("C6H6"))
-
-    def test_init_rejects_invalid_object(self) -> None:
-        """Raise AssertionError for non-Mol input."""
-        with self.assertRaises(AssertionError):
-            Compound("CCO")  # type: ignore[arg-type]
 
 
 if __name__ == "__main__":

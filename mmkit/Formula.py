@@ -2,12 +2,14 @@ from __future__ import annotations
 
 import re
 from collections import OrderedDict
-from typing import Dict, Iterable, List, Union
+from dataclasses import dataclass, field
+from typing import Dict, Iterable, Mapping, Union
 
 from rdkit import Chem
 from rdkit.Chem import rdMolDescriptors
 
 
+@dataclass(frozen=True, slots=True, eq=False, init=False)
 class Formula:
     """
     Represent a chemical formula with element counts and net charge.
@@ -23,12 +25,16 @@ class Formula:
     - ``raw_formula`` can preserve the original input string when needed.
     """
 
+    _elements: OrderedDict[str, int] = field(init=False, repr=False)
+    _charge: int = field(init=False, repr=False)
+    _raw_formula: str = field(init=False, repr=False)
+
     # ------------------------------------------------------------------
     # Construction
     # ------------------------------------------------------------------
     def __init__(
         self,
-        elements: Dict[str, int],
+        elements: Mapping[str, int],
         charge: int = 0,
         raw_formula: str = "",
     ) -> None:
@@ -37,11 +43,13 @@ class Formula:
 
         Parameters
         ----------
-        elements
+        elements:
             Mapping from element symbol to count.
-        charge
+
+        charge:
             Net charge of the formula.
-        raw_formula
+
+        raw_formula:
             Original formula string stored for reference.
 
         Notes
@@ -49,34 +57,29 @@ class Formula:
         Element keys are reordered into Hill order and zero-count elements
         are removed during initialization.
         """
-        self._charge: int = charge
-        self._raw_formula: str = raw_formula
-        self._elements: OrderedDict[str, int] = OrderedDict()
-        self._reorder_elements(elements.copy())
+        ordered_elements = self._build_ordered_elements(dict(elements))
+
+        object.__setattr__(self, "_elements", ordered_elements)
+        object.__setattr__(self, "_charge", int(charge))
+        object.__setattr__(self, "_raw_formula", raw_formula)
 
     @classmethod
-    def parse(cls, formula_str: str, store_raw: bool = False) -> "Formula":
+    def parse(cls, formula_str: str, store_raw: bool = False) -> Formula:
         """
         Parse a formula string into a Formula object.
 
         Parameters
         ----------
-        formula_str
+        formula_str:
             Formula string such as ``C6H12O6`` or ``C6H12O6+``.
-        store_raw
+
+        store_raw:
             Whether to store the original input string in ``raw_formula``.
 
         Returns
         -------
         Formula
             Parsed Formula instance.
-
-        Examples
-        --------
-        >>> Formula.parse("HOH").value
-        'H2O'
-        >>> Formula.parse("C6H12O6+").charge
-        1
         """
         formula_body, charge = cls._split_formula_and_charge(formula_str)
         elements = cls._parse_element_counts(formula_body)
@@ -88,13 +91,38 @@ class Formula:
         )
 
     @classmethod
-    def from_mol(cls, mol: Chem.Mol) -> "Formula":
+    def from_dict(
+        cls,
+        elements: Mapping[str, int],
+        *,
+        charge: int = 0,
+        raw_formula: str = "",
+    ) -> Formula:
+        """
+        Create a Formula from an element-count dictionary.
+
+        Examples
+        --------
+        ``Formula.from_dict({"C": 6, "H": 12, "O": 6})``
+        -> ``C6H12O6``
+
+        ``Formula.from_dict({"H": -5})``
+        -> ``-H5``
+        """
+        return cls(
+            elements=elements,
+            charge=charge,
+            raw_formula=raw_formula,
+        )
+
+    @classmethod
+    def from_mol(cls, mol: Chem.Mol) -> Formula:
         """
         Create a Formula from an RDKit molecule.
 
         Parameters
         ----------
-        mol
+        mol:
             RDKit molecule object.
 
         Returns
@@ -109,7 +137,7 @@ class Formula:
         """
         mol_with_h = Chem.AddHs(mol)
 
-        elements: Dict[str, int] = {}
+        elements: dict[str, int] = {}
         total_charge = 0
 
         for atom in mol_with_h.GetAtoms():
@@ -120,14 +148,9 @@ class Formula:
         return cls(elements=elements, charge=total_charge)
 
     @classmethod
-    def empty(cls) -> "Formula":
+    def empty(cls) -> Formula:
         """
         Return an empty formula.
-
-        Returns
-        -------
-        Formula
-            Formula with no elements and zero charge.
         """
         return cls(elements={}, charge=0)
 
@@ -135,7 +158,7 @@ class Formula:
     # Properties
     # ------------------------------------------------------------------
     @property
-    def elements(self) -> Dict[str, int]:
+    def elements(self) -> OrderedDict[str, int]:
         """
         Element-count mapping in Hill order.
 
@@ -150,11 +173,6 @@ class Formula:
     def charge(self) -> int:
         """
         Net charge of the formula.
-
-        Returns
-        -------
-        int
-            Formal charge of the formula.
         """
         return self._charge
 
@@ -163,26 +181,17 @@ class Formula:
         """
         Original formula string, if available.
 
-        Returns
-        -------
-        str
-            Stored original formula string if available. If no raw string was
-            stored, the canonical formula string is returned instead.
+        If no raw string was stored, the canonical formula string is returned.
         """
         if self._raw_formula == "":
             return self.to_string(no_charge=False)
+
         return self._raw_formula
 
     @property
     def exact_mass(self) -> float:
         """
         Monoisotopic exact mass of the formula.
-
-        Returns
-        -------
-        float
-            Exact mass calculated from the most common isotope mass of each
-            element.
         """
         periodic_table = Chem.GetPeriodicTable()
         mass = 0.0
@@ -197,11 +206,6 @@ class Formula:
     def is_nonnegative(self) -> bool:
         """
         Whether all element counts are non-negative.
-
-        Returns
-        -------
-        bool
-            True if every element count is greater than or equal to zero.
         """
         return all(count >= 0 for count in self._elements.values())
 
@@ -209,11 +213,6 @@ class Formula:
     def value(self) -> str:
         """
         Canonical formula string including charge.
-
-        Returns
-        -------
-        str
-            Formula string with charge suffix.
         """
         return self.to_string(no_charge=False)
 
@@ -221,50 +220,67 @@ class Formula:
     def plain_value(self) -> str:
         """
         Canonical formula string without charge.
-
-        Returns
-        -------
-        str
-            Formula string without charge suffix.
         """
         return self.to_string(no_charge=True)
 
     @property
-    def plain(self) -> "Formula":
+    def plain(self) -> Formula:
         """
         Copy of the formula with zero charge.
-
-        Returns
-        -------
-        Formula
-            Copy of the formula with zero charge.
         """
-        return Formula(self._elements, 0, self._raw_formula)
+        return Formula(
+            elements=self._elements,
+            charge=0,
+            raw_formula=self._raw_formula,
+        )
 
     @property
-    def normalized(self) -> "Formula":
+    def normalized(self) -> Formula:
         """
         Copy with ``raw_formula`` cleared.
-
-        Returns
-        -------
-        Formula
-            Copy of the formula with the same composition and charge, but with
-            an empty ``raw_formula``.
         """
-        return Formula(self._elements.copy(), self._charge, "")
+        return Formula(
+            elements=self._elements,
+            charge=self._charge,
+            raw_formula="",
+        )
 
     @property
-    def normalized_plain(self) -> "Formula":
+    def normalized_plain(self) -> Formula:
         """
         Copy with zero charge and empty ``raw_formula``.
-
-        Returns
-        -------
-        Formula
-            Copy of the formula with zero charge and an empty ``raw_formula``.
         """
-        return Formula(self._elements.copy(), 0, "")
+        return Formula(
+            elements=self._elements,
+            charge=0,
+            raw_formula="",
+        )
+
+    # ------------------------------------------------------------------
+    # Mutation-like utilities for frozen dataclass
+    # ------------------------------------------------------------------
+    def with_charge(self, charge: int) -> Formula:
+        """
+        Return a new Formula with a different charge.
+
+        Since Formula is frozen, this should be used instead of directly
+        modifying ``_charge``.
+        """
+        return Formula(
+            elements=self._elements,
+            charge=charge,
+            raw_formula=self._raw_formula,
+        )
+
+    def with_raw_formula(self, raw_formula: str) -> Formula:
+        """
+        Return a new Formula with a different raw formula string.
+        """
+        return Formula(
+            elements=self._elements,
+            charge=self._charge,
+            raw_formula=raw_formula,
+        )
 
     # ------------------------------------------------------------------
     # String representation
@@ -272,22 +288,12 @@ class Formula:
     def __repr__(self) -> str:
         """
         Return the debug representation.
-
-        Returns
-        -------
-        str
-            Debug-style representation of the formula.
         """
         return f"Formula({self})"
 
     def __str__(self) -> str:
         """
         Return the canonical formula string.
-
-        Returns
-        -------
-        str
-            Formula string including charge.
         """
         return self.to_string(no_charge=False)
 
@@ -297,7 +303,7 @@ class Formula:
 
         Parameters
         ----------
-        no_charge
+        no_charge:
             If True, omit the charge suffix.
 
         Returns
@@ -310,8 +316,7 @@ class Formula:
         Elements are emitted in Hill order. Negative element counts are written
         with a leading ``-``.
         """
-        parts: List[str] = []
-        neutron_part = ""
+        parts: list[str] = []
 
         for elem, count in self._elements.items():
             if count > 0:
@@ -319,7 +324,7 @@ class Formula:
             elif count < 0:
                 parts.append(f"-{elem}{-count if count != -1 else ''}")
 
-        formula = "".join(parts) + neutron_part
+        formula = "".join(parts)
 
         if not no_charge:
             if self._charge > 0:
@@ -336,18 +341,11 @@ class Formula:
         """
         Return whether two Formula objects are equal.
 
-        Parameters
-        ----------
-        other
-            Object to compare against.
-
-        Returns
-        -------
-        bool
-            True if both charge and element counts are equal.
+        ``raw_formula`` is ignored for normal equality.
         """
         if not isinstance(other, Formula):
             return False
+
         return (
             self._charge == other._charge
             and self._elements == other._elements
@@ -357,22 +355,21 @@ class Formula:
         """
         Return the hash value.
 
-        Returns
-        -------
-        int
-            Hash based on element counts, charge, and raw formula string.
+        ``raw_formula`` is intentionally ignored because ``__eq__`` also ignores it.
+        This keeps the hash contract consistent.
         """
-        return hash((tuple(self._elements.items()), self._charge, self._raw_formula))
+        return hash((tuple(self._elements.items()), self._charge))
 
-    def eq(self, other: "Formula", ignore_raw: bool = True) -> bool:
+    def eq(self, other: Formula, ignore_raw: bool = True) -> bool:
         """
         Compare two Formula objects with optional raw-string comparison.
 
         Parameters
         ----------
-        other
+        other:
             Formula to compare with.
-        ignore_raw
+
+        ignore_raw:
             If False, also compare ``raw_formula``.
 
         Returns
@@ -384,31 +381,24 @@ class Formula:
             return False
 
         base_equal = self == other
+
         if ignore_raw:
             return base_equal
-        return base_equal and (self._raw_formula == other._raw_formula)
+
+        return base_equal and self._raw_formula == other._raw_formula
 
     # ------------------------------------------------------------------
     # Arithmetic
     # ------------------------------------------------------------------
-    def __add__(self, other: "Formula") -> "Formula":
+    def __add__(self, other: Formula) -> Formula:
         """
         Return the sum of two formulas.
-
-        Parameters
-        ----------
-        other
-            Formula to add.
-
-        Returns
-        -------
-        Formula
-            Sum of the two formulas.
         """
         if not isinstance(other, Formula):
             return NotImplemented
 
         combined = dict(self._elements)
+
         for elem, count in other._elements.items():
             combined[elem] = combined.get(elem, 0) + count
 
@@ -417,24 +407,15 @@ class Formula:
             charge=self._charge + other._charge,
         )
 
-    def __sub__(self, other: "Formula") -> "Formula":
+    def __sub__(self, other: Formula) -> Formula:
         """
         Return the difference of two formulas.
-
-        Parameters
-        ----------
-        other
-            Formula to subtract.
-
-        Returns
-        -------
-        Formula
-            Difference of the two formulas.
         """
         if not isinstance(other, Formula):
             return NotImplemented
 
         combined = dict(self._elements)
+
         for elem, count in other._elements.items():
             combined[elem] = combined.get(elem, 0) - count
 
@@ -443,24 +424,9 @@ class Formula:
             charge=self._charge - other._charge,
         )
 
-    def __mul__(self, factor: int) -> "Formula":
+    def __mul__(self, factor: int) -> Formula:
         """
         Multiply the formula by an integer.
-
-        Parameters
-        ----------
-        factor
-            Integer scaling factor.
-
-        Returns
-        -------
-        Formula
-            Scaled formula.
-
-        Raises
-        ------
-        TypeError
-            If ``factor`` is not an integer.
 
         Examples
         --------
@@ -469,53 +435,30 @@ class Formula:
         if not isinstance(factor, int):
             raise TypeError(f"Formula can only be multiplied by int, not {type(factor)}")
 
-        new_elements = {elem: count * factor for elem, count in self._elements.items()}
-        new_charge = self._charge * factor
-        return Formula(new_elements, new_charge, self._raw_formula)
+        new_elements = {
+            elem: count * factor
+            for elem, count in self._elements.items()
+        }
 
-    def __rmul__(self, factor: int) -> "Formula":
+        return Formula(
+            elements=new_elements,
+            charge=self._charge * factor,
+            raw_formula=self._raw_formula,
+        )
+
+    def __rmul__(self, factor: int) -> Formula:
         """
         Support reversed multiplication.
-
-        Parameters
-        ----------
-        factor
-            Integer scaling factor.
-
-        Returns
-        -------
-        Formula
-            Scaled formula.
         """
         return self.__mul__(factor)
 
     # ------------------------------------------------------------------
     # Predicates / membership
     # ------------------------------------------------------------------
-    def __contains__(self, item: Union["Formula", str]) -> bool:
+    def __contains__(self, item: Union[Formula, str]) -> bool:
         """
         Return whether this formula contains another formula.
 
-        Parameters
-        ----------
-        item
-            Formula object or formula string to test for containment.
-
-        Returns
-        -------
-        bool
-            True if this formula contains at least the counts required by
-            ``item``.
-
-        Raises
-        ------
-        ValueError
-            If this formula contains negative element counts.
-        TypeError
-            If ``item`` is neither ``Formula`` nor ``str``.
-
-        Notes
-        -----
         Containment checks are only supported for non-negative formulas.
         """
         if not self.is_nonnegative:
@@ -524,59 +467,63 @@ class Formula:
         if isinstance(item, str):
             item = Formula.parse(item)
         elif not isinstance(item, Formula):
-            raise TypeError(f"Containment check only supports Formula or str, not {type(item)}")
+            raise TypeError(
+                f"Containment check only supports Formula or str, not {type(item)}"
+            )
 
-        return all(self._elements.get(elem, 0) >= count for elem, count in item._elements.items())
+        return all(
+            self._elements.get(elem, 0) >= count
+            for elem, count in item._elements.items()
+        )
 
     # ------------------------------------------------------------------
     # Copy utilities
     # ------------------------------------------------------------------
-    def copy(self) -> "Formula":
+    def copy(self) -> Formula:
         """
         Create a copy of the formula.
-
-        Returns
-        -------
-        Formula
-            Shallow copy of the Formula object.
         """
-        return Formula(self._elements, self._charge, self._raw_formula)
+        return Formula(
+            elements=self._elements,
+            charge=self._charge,
+            raw_formula=self._raw_formula,
+        )
+
+    def to_dict(self) -> dict[str, int]:
+        """
+        Convert the formula to a plain element-count dictionary.
+        """
+        return dict(self._elements)
 
     # ------------------------------------------------------------------
     # Internal helpers
     # ------------------------------------------------------------------
-    def _reorder_elements(self, element_counts: Dict[str, int]) -> None:
+    @classmethod
+    def _build_ordered_elements(
+        cls,
+        element_counts: Mapping[str, int],
+    ) -> OrderedDict[str, int]:
         """
-        Reorder elements according to the Hill system.
-
-        Parameters
-        ----------
-        element_counts
-            Mapping from element symbol to count.
-
-        Notes
-        -----
-        Zero-count elements are removed.
+        Reorder elements according to the Hill system and remove zero counts.
         """
-        ordered = self._reorder_element_keys(element_counts.keys())
-        self._elements = OrderedDict(
-            (k, element_counts[k]) for k in ordered if element_counts[k] != 0
+        nonzero_counts = {
+            elem: int(count)
+            for elem, count in element_counts.items()
+            if int(count) != 0
+        }
+
+        ordered_keys = cls._reorder_element_keys(nonzero_counts.keys())
+
+        return OrderedDict(
+            (key, nonzero_counts[key])
+            for key in ordered_keys
+            if nonzero_counts[key] != 0
         )
 
     @staticmethod
     def _split_formula_and_charge(formula: str) -> tuple[str, int]:
         """
         Split a formula string into formula body and charge.
-
-        Parameters
-        ----------
-        formula
-            Formula string including an optional charge suffix.
-
-        Returns
-        -------
-        tuple[str, int]
-            Tuple of ``(formula_body, charge)``.
 
         Examples
         --------
@@ -592,65 +539,53 @@ class Formula:
             formula = formula[: -len(charge_str)]
 
             charge = int(charge_str[1:]) if charge_str[1:] else 1
+
             if charge_str[0] == "-":
                 charge *= -1
 
         return formula, charge
 
     @staticmethod
-    def _parse_element_counts(formula: str) -> Dict[str, int]:
+    def _parse_element_counts(formula: str) -> dict[str, int]:
         """
         Parse element counts from a neutral formula body.
 
-        Parameters
-        ----------
-        formula
-            Formula string without a charge suffix.
-
-        Returns
-        -------
-        dict[str, int]
-            Mapping from element symbol to count.
-
-        Notes
-        -----
         Negative terms such as ``-H2`` are supported.
         """
         matches = re.findall(
-            rf"([+-]?)([A-Z][a-z]?)(\d*)",
+            r"([+-]?)([A-Z][a-z]?)(\d*)",
             formula,
         )
 
-        temp: Dict[str, int] = {}
+        temp: dict[str, int] = {}
 
         for sign, elem, count in matches:
             value = int(count) if count else 1
+
             if sign == "-":
                 value = -value
 
             temp[elem] = temp.get(elem, 0) + value
 
-        return {k: v for k, v in temp.items() if v != 0}
+        return {
+            elem: count
+            for elem, count in temp.items()
+            if count != 0
+        }
 
     @staticmethod
     def _reorder_element_keys(elements: Iterable[str]) -> tuple[str, ...]:
         """
         Reorder element symbols according to the Hill system.
-
-        Parameters
-        ----------
-        elements
-            Iterable of element symbols.
-
-        Returns
-        -------
-        tuple[str, ...]
-            Element symbols in Hill order.
         """
+        element_tuple = tuple(elements)
+
+        if not element_tuple:
+            return tuple()
+
         mol = Chem.RWMol()
 
-        for elem in elements:
-
+        for elem in element_tuple:
             atom = Chem.Atom(elem)
             atom.SetNoImplicit(True)
             mol.AddAtom(atom)
@@ -658,6 +593,4 @@ class Formula:
         formula_str = rdMolDescriptors.CalcMolFormula(mol.GetMol())
         matches = re.findall(r"([A-Z][a-z]?)(\d*)", formula_str)
 
-        ordered = tuple(match[0] for match in matches)
-
-        return ordered
+        return tuple(match[0] for match in matches)

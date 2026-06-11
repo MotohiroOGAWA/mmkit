@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 from collections import defaultdict
-from typing import Dict, List, Literal, Tuple, Union, overload
+from dataclasses import dataclass, field
+from typing import Dict, Literal, Mapping, Tuple, Union, overload
 import re
 
 from rdkit import Chem  # noqa: F401
@@ -10,6 +11,10 @@ from .Formula import Formula
 from ._parsing import charge_from_str
 
 
+FormulaKey = Union[str, Formula]
+
+
+@dataclass(frozen=True, slots=True)
 class Adduct:
     """
     Representation of an adduct ion.
@@ -17,10 +22,9 @@ class Adduct:
     An ``Adduct`` describes how a neutral molecule is transformed into an
     observed ion by tracking:
 
-    - ion type (e.g. ``"M"``, ``"F"``)
+    - ion type, such as ``"M"`` or ``"F"``
     - number of molecules
-    - added formulas (adducts_in)
-    - removed formulas (adducts_out)
+    - signed formula counts
     - net charge
 
     Examples
@@ -33,90 +37,65 @@ class Adduct:
 
     ``[M-H]-``
         Deprotonated molecule.
+
+    ``Adduct.from_dict({"H": -5}, charge=-1)``
+        Molecule losing five hydrogens: ``[M-5H]-``.
     """
 
-    def __init__(
-        self,
-        ion_type: Literal["M", "F"],
-        n_molecules: int = 1,
-        adducts_in: List[Formula] | None = None,
-        adducts_out: List[Formula] | None = None,
-        charge: int = 0,
-    ):
-        """
-        Initialize an Adduct.
+    ion_type: Literal["M", "F"] = "M"
+    n_molecules: int = 1
+    formula_counts: Mapping[FormulaKey, int] = field(default_factory=dict)
+    charge: int = 0
 
-        Parameters
-        ----------
-        ion_type : {"M", "F"}
-            Ion type identifier.
-        n_molecules : int, default=1
-            Number of neutral molecules.
-        adducts_in : list[Formula] or None
-            Formulas added during ionization.
-        adducts_out : list[Formula] or None
-            Formulas removed during ionization.
-        charge : int, default=0
-            Net charge of the ion.
+    def __post_init__(self) -> None:
+        if self.ion_type not in ("M", "F"):
+            raise ValueError(
+                f"ion_type must be one of 'M' or 'F', but got {self.ion_type!r}."
+            )
 
-        Notes
-        -----
-        Added and removed formulas are internally merged into a signed count
-        representation.
-        """
-        assert ion_type in ["M", "F"], (
-            f"ion_type must be one of 'M' or 'F', but got '{ion_type}'."
-        )
-        assert n_molecules >= 1, "n_molecules must be at least 1"
+        if self.n_molecules < 1:
+            raise ValueError("n_molecules must be at least 1.")
 
-        adducts_in = [] if adducts_in is None else adducts_in
-        adducts_out = [] if adducts_out is None else adducts_out
+        normalized_counts: dict[Formula, int] = defaultdict(int)
 
-        self._ion_type = ion_type
-        self._n_molecules = n_molecules
+        for formula, count in self.formula_counts.items():
+            if count == 0:
+                continue
 
-        formula_count: Dict[Formula, int] = defaultdict(int)
+            parsed_formula = self._normalize_formula_key(formula)
+            normalized_counts[parsed_formula.plain] += int(count)
 
-        for formula in adducts_in:
-            formula_count[formula.plain] += 1
-
-        for formula in adducts_out:
-            formula_count[formula.plain] -= 1
-
-        self._adduct_formulas: Dict[Formula, int] = {
+        normalized_counts = {
             formula.copy(): count
-            for formula, count in formula_count.items()
+            for formula, count in normalized_counts.items()
             if count != 0
         }
-        self._charge = charge
+
+        object.__setattr__(self, "formula_counts", normalized_counts)
+
+    # -------------------------------------------------------------------------
+    # Constructors
+    # -------------------------------------------------------------------------
 
     @classmethod
-    def parse(cls, adduct_str: str) -> "Adduct":
+    def parse(cls, adduct_str: str) -> Adduct:
         """
         Parse an adduct string.
 
         Parameters
         ----------
-        adduct_str : str
+        adduct_str:
             Adduct string such as ``"[M+H]+"`` or ``"[2M-H]-"``.
 
         Returns
         -------
         Adduct
             Parsed adduct object.
-
-        Raises
-        ------
-        AssertionError
-            If the string does not follow bracketed adduct notation.
-        ValueError
-            If the molecule identifier cannot be parsed.
         """
-        assert adduct_str.startswith("[") and "]" in adduct_str, (
-            f"Invalid adduct format: {adduct_str}"
-        )
+        if not adduct_str.startswith("[") or "]" not in adduct_str:
+            raise ValueError(f"Invalid adduct format: {adduct_str}")
 
-        main, charge_part = adduct_str[1:].split("]")
+        main, charge_part = adduct_str[1:].split("]", maxsplit=1)
         charge = charge_from_str(charge_part.strip())
 
         n_match = re.match(r"(\d*)([A-Za-z]+)", main)
@@ -127,74 +106,121 @@ class Adduct:
 
         n_molecules = int(n_match.group(1)) if n_match.group(1) else 1
         ion_type = n_match.group(2)
+
+        if ion_type not in ("M", "F"):
+            raise ValueError(
+                f"ion_type must be one of 'M' or 'F', but got {ion_type!r}."
+            )
+
         remainder = main[n_match.end():]
 
         pattern = re.compile(r"([+-])(\d*)([A-Z][A-Za-z0-9]*)|([+-])(\d*)(i)")
-        adducts_in: list[Formula] = []
-        adducts_out: list[Formula] = []
+        formula_counts: dict[str, int] = defaultdict(int)
 
-        for sign, num, formula_str, i_sign, i_num, i_formula_str in pattern.findall(remainder):
+        for sign, num, formula_str, i_sign, i_num, i_formula_str in pattern.findall(
+            remainder
+        ):
             if i_formula_str == "i":
-                formula_str = f"+{Formula.neutron().symbol}"
+                formula_str = Formula.neutron().symbol
                 sign = i_sign
                 num = i_num
 
             count = int(num) if num else 1
-            formulas = [Formula.parse(formula_str) for _ in range(count)]
 
             if sign == "+":
-                adducts_in.extend(formulas)
-            else:
-                adducts_out.extend(formulas)
+                formula_counts[formula_str] += count
+            elif sign == "-":
+                formula_counts[formula_str] -= count
 
-        adduct = cls(
+        return cls(
             ion_type=ion_type,
             n_molecules=n_molecules,
-            adducts_in=adducts_in,
-            adducts_out=adducts_out,
+            formula_counts=formula_counts,
             charge=charge,
         )
-        return adduct
-    
+
+    @classmethod
+    def from_dict(
+        cls,
+        formula_counts: Mapping[FormulaKey, int],
+        *,
+        ion_type: Literal["M", "F"] = "M",
+        n_molecules: int = 1,
+        charge: int = 0,
+    ) -> Adduct:
+        """
+        Create an adduct from signed formula counts.
+
+        Parameters
+        ----------
+        formula_counts:
+            Mapping from formula to signed count.
+
+            Positive count means the formula is added.
+            Negative count means the formula is removed.
+
+            Examples:
+            ``{"H": 1}`` -> ``[M+H]+`` if charge is ``+1``.
+            ``{"H": -1}`` -> ``[M-H]-`` if charge is ``-1``.
+            ``{"H": -5}`` -> ``[M-5H]-`` if charge is ``-1``.
+
+        ion_type:
+            Ion type identifier.
+
+        n_molecules:
+            Number of neutral molecules.
+
+        charge:
+            Net charge of the ion.
+
+        Returns
+        -------
+        Adduct
+            Created adduct object.
+        """
+        return cls(
+            ion_type=ion_type,
+            n_molecules=n_molecules,
+            formula_counts=formula_counts,
+            charge=charge,
+        )
+
+    @classmethod
+    def from_adducts(
+        cls,
+        *,
+        ion_type: Literal["M", "F"] = "M",
+        n_molecules: int = 1,
+        adducts_in: Tuple[FormulaKey, ...] = (),
+        adducts_out: Tuple[FormulaKey, ...] = (),
+        charge: int = 0,
+    ) -> Adduct:
+        """
+        Create an adduct from added and removed formulas.
+
+        This is a compatibility constructor for the old ``adducts_in`` /
+        ``adducts_out`` style.
+        """
+        formula_counts: dict[Formula, int] = defaultdict(int)
+
+        for formula in adducts_in:
+            parsed_formula = cls._normalize_formula_key(formula)
+            formula_counts[parsed_formula.plain] += 1
+
+        for formula in adducts_out:
+            parsed_formula = cls._normalize_formula_key(formula)
+            formula_counts[parsed_formula.plain] -= 1
+
+        return cls(
+            ion_type=ion_type,
+            n_molecules=n_molecules,
+            formula_counts=formula_counts,
+            charge=charge,
+        )
+
     # -------------------------------------------------------------------------
     # Properties
     # -------------------------------------------------------------------------
-
-    @property
-    def ion_type(self) -> Literal["M", "F"]:
-        """
-        Ion type of the adduct.
-
-        Returns
-        -------
-        Literal["M", "F"]
-            Ion type of this adduct.
-        """
-        return self._ion_type
-
-    @property
-    def n_molecules(self) -> int:
-        """
-        Number of neutral molecules.
-
-        Returns
-        -------
-        int
-            Number of molecules represented by this adduct.
-        """
-        return self._n_molecules
-
-    @property
-    def charge(self) -> int:
-        """
-        Net charge of the adduct.
-
-        Returns
-        -------
-        int
-            Net charge of the adduct.
-        """
-        return self._charge
 
     @property
     def adduct_formulas(self) -> Dict[Formula, int]:
@@ -206,51 +232,41 @@ class Adduct:
         dict[Formula, int]
             Mapping from formula to signed count.
         """
-        return dict(self._adduct_formulas)
+        return {
+            formula.copy(): count
+            for formula, count in self.formula_counts.items()
+        }
 
     @property
     def formula_diff(self) -> Formula:
         """
         Net formula difference introduced by the adduct.
-
-        Returns
-        -------
-        Formula
-            Net added or removed composition.
         """
         total = Formula.empty()
-        for formula, count in self._adduct_formulas.items():
+
+        for formula, count in self.formula_counts.items():
             total = total + (formula * count)
+
         return total
 
     @property
     def mass_shift(self) -> float:
         """
         Exact mass shift introduced by the adduct.
-
-        Returns
-        -------
-        float
-            Total exact mass added or removed.
         """
         return sum(
             formula.exact_mass * count
-            for formula, count in self._adduct_formulas.items()
+            for formula, count in self.formula_counts.items()
         )
 
     @property
     def element_diff(self) -> dict[str, int]:
         """
         Total element count difference introduced by the adduct.
-
-        Returns
-        -------
-        dict[str, int]
-            Mapping from element symbol to signed count.
         """
         total: dict[str, int] = defaultdict(int)
 
-        for formula, count in self._adduct_formulas.items():
+        for formula, count in self.formula_counts.items():
             for elem, elem_count in formula.elements.items():
                 total[elem] += elem_count * count
 
@@ -260,36 +276,30 @@ class Adduct:
     # Basic methods
     # -------------------------------------------------------------------------
 
-    def copy(self) -> "Adduct":
+    def copy(self) -> Adduct:
         """
         Create a copy of the adduct.
-
-        Returns
-        -------
-        Adduct
-            Copied adduct object.
         """
-        adducts_in, adducts_out = self._split_adduct_formulas()
-
-        copied = Adduct(
-            ion_type=self._ion_type,
-            n_molecules=self._n_molecules,
-            adducts_in=[f.copy() for f in adducts_in],
-            adducts_out=[f.copy() for f in adducts_out],
-            charge=self._charge,
+        return Adduct(
+            ion_type=self.ion_type,
+            n_molecules=self.n_molecules,
+            formula_counts=self.formula_counts,
+            charge=self.charge,
         )
-        return copied
 
-    def set_charge(self, charge: int) -> None:
+    def with_charge(self, charge: int) -> Adduct:
         """
-        Set the net charge of the adduct.
+        Return a new adduct with a different charge.
 
-        Parameters
-        ----------
-        charge : int
-            New charge value.
+        Since this dataclass is frozen, this replaces the old mutable
+        ``set_charge`` behavior.
         """
-        self._charge = charge
+        return Adduct(
+            ion_type=self.ion_type,
+            n_molecules=self.n_molecules,
+            formula_counts=self.formula_counts,
+            charge=charge,
+        )
 
     @overload
     def get_formula_count(self, formula: Formula) -> int: ...
@@ -297,31 +307,25 @@ class Adduct:
     @overload
     def get_formula_count(self, formula: str) -> int: ...
 
-    def get_formula_count(self, formula: Union[Formula, str]) -> int:
+    def get_formula_count(self, formula: FormulaKey) -> int:
         """
         Get the signed count of a specific formula.
-
-        Parameters
-        ----------
-        formula : Formula or str
-            Target formula.
-
-        Returns
-        -------
-        int
-            Positive if added, negative if removed, zero if absent.
-
-        Raises
-        ------
-        TypeError
-            If ``formula`` is neither ``Formula`` nor ``str``.
         """
-        if isinstance(formula, str):
-            formula = Formula.parse(formula)
-        elif not isinstance(formula, Formula):
-            raise TypeError(f"formula must be Formula or str, got {type(formula)}")
+        parsed_formula = self._normalize_formula_key(formula)
+        return self.formula_counts.get(parsed_formula.plain, 0)
 
-        return self._adduct_formulas.get(formula.plain, 0)
+    def to_dict(self) -> dict[str, int]:
+        """
+        Convert formula counts to a simple string-keyed dictionary.
+
+        Examples
+        --------
+        ``[M-5H]-`` -> ``{"H": -5}``
+        """
+        return {
+            formula.raw_formula.replace("+", "").replace("-", ""): count
+            for formula, count in self.formula_counts.items()
+        }
 
     # -------------------------------------------------------------------------
     # String representation
@@ -330,16 +334,11 @@ class Adduct:
     def __str__(self) -> str:
         """
         Convert the adduct to canonical string form.
-
-        Returns
-        -------
-        str
-            Adduct notation such as ``[M+H]+`` or ``[M-H]-``.
         """
         parts: list[str] = []
 
         for formula, count in sorted(
-            self._adduct_formulas.items(),
+            self.formula_counts.items(),
             key=lambda x: (-x[0].exact_mass, x[0].raw_formula),
         ):
             formula_str = formula.raw_formula.replace("+", "").replace("-", "")
@@ -352,52 +351,40 @@ class Adduct:
                 parts.append(f"{prefix}{formula_str}")
 
         body = "".join(parts)
-        nM = f"{self._n_molecules if self._n_molecules > 1 else ''}{self._ion_type}"
+        molecule_part = (
+            f"{self.n_molecules if self.n_molecules > 1 else ''}{self.ion_type}"
+        )
 
-        if self._charge > 0:
-            charge = f"+{self._charge}" if self._charge > 1 else "+"
-        elif self._charge < 0:
-            charge = f"{self._charge}" if self._charge < -1 else "-"
+        if self.charge > 0:
+            charge_part = f"+{self.charge}" if self.charge > 1 else "+"
+        elif self.charge < 0:
+            charge_part = f"{self.charge}" if self.charge < -1 else "-"
         else:
-            charge = ""
+            charge_part = ""
 
-        return f"[{nM}{body}]{charge}"
+        return f"[{molecule_part}{body}]{charge_part}"
 
     def __repr__(self) -> str:
         """
         Convert the adduct to debug representation.
-
-        Returns
-        -------
-        str
-            Debug-style representation of the adduct.
         """
         return f"Adduct({self})"
 
     def __eq__(self, other: object) -> bool:
         """
-        Compare two adducts for equality.
-
-        Parameters
-        ----------
-        other : object
-            Object to compare.
-
-        Returns
-        -------
-        bool
-            True if the canonical string representations are equal.
+        Compare two adducts by canonical string representation.
         """
+        if not isinstance(other, Adduct):
+            return False
+
         return str(self) == str(other)
+
 
     def __hash__(self) -> int:
         """
-        Compute the hash value of the adduct.
+        Compute hash by canonical string representation.
 
-        Returns
-        -------
-        int
-            Hash based on the canonical string representation.
+        This avoids hashing formula_counts directly, because it is stored as a dict.
         """
         return hash(str(self))
 
@@ -407,98 +394,54 @@ class Adduct:
 
     def add(
         self,
-        other: "Adduct",
+        other: Adduct,
+        *,
         prefer_ion_type: bool = False,
         prefer_n_molecules: bool = False,
         prefer_charge: bool = False,
-    ) -> "Adduct":
+    ) -> Adduct:
         """
         Combine this adduct with another adduct.
-
-        Parameters
-        ----------
-        other : Adduct
-            Adduct to combine with.
-        prefer_ion_type : bool, default=False
-            Whether to keep ``self.ion_type`` when ion types differ.
-        prefer_n_molecules : bool, default=False
-            Whether to keep ``self.n_molecules`` when molecule counts differ.
-        prefer_charge : bool, default=False
-            Whether to keep ``self.charge`` when charges differ.
-
-        Returns
-        -------
-        Adduct
-            Combined adduct.
-
-        Raises
-        ------
-        AssertionError
-            If ``other`` is not an ``Adduct``.
-        ValueError
-            If ion types differ and ``prefer_ion_type`` is False.
         """
-        assert isinstance(other, Adduct), (
-            f"Can only add Adduct to Adduct, but got {type(other)}"
-        )
+        if not isinstance(other, Adduct):
+            raise TypeError(f"Can only add Adduct to Adduct, but got {type(other)}")
 
-        if not prefer_ion_type and self._ion_type != other._ion_type:
+        if not prefer_ion_type and self.ion_type != other.ion_type:
             raise ValueError(
                 f"Cannot add Adducts with different ion_type: "
-                f"{self._ion_type} + {other._ion_type}"
+                f"{self.ion_type} + {other.ion_type}"
             )
 
-        if not prefer_n_molecules:
-            assert self._n_molecules == other._n_molecules, (
+        if not prefer_n_molecules and self.n_molecules != other.n_molecules:
+            raise ValueError(
                 f"Cannot add Adducts with different n_molecules: "
-                f"{self._n_molecules} + {other._n_molecules}"
+                f"{self.n_molecules} + {other.n_molecules}"
             )
 
-        if not prefer_charge:
-            assert self._charge == other._charge, (
+        if not prefer_charge and self.charge != other.charge:
+            raise ValueError(
                 f"Cannot add Adducts with different charge: "
-                f"{self._charge} + {other._charge}"
+                f"{self.charge} + {other.charge}"
             )
 
         merged: dict[Formula, int] = defaultdict(int)
 
-        for formula, count in self._adduct_formulas.items():
-            merged[formula] += count
-        for formula, count in other._adduct_formulas.items():
-            merged[formula] += count
+        for formula, count in self.formula_counts.items():
+            merged[formula.plain] += count
 
-        adducts_in: list[Formula] = []
-        adducts_out: list[Formula] = []
+        for formula, count in other.formula_counts.items():
+            merged[formula.plain] += count
 
-        for formula, count in merged.items():
-            if count > 0:
-                adducts_in.extend([formula.copy()] * count)
-            elif count < 0:
-                adducts_out.extend([formula.copy()] * (-count))
-
-        out = Adduct(
-            ion_type=self._ion_type,
-            n_molecules=self._n_molecules,
-            adducts_in=adducts_in,
-            adducts_out=adducts_out,
-            charge=self._charge,
+        return Adduct(
+            ion_type=self.ion_type,
+            n_molecules=self.n_molecules,
+            formula_counts=merged,
+            charge=self.charge,
         )
 
-        return out
-
-    def add_prefer_self(self, other: "Adduct") -> "Adduct":
+    def add_prefer_self(self, other: Adduct) -> Adduct:
         """
         Combine two adducts while keeping this adduct's metadata.
-
-        Parameters
-        ----------
-        other : Adduct
-            Adduct to combine with.
-
-        Returns
-        -------
-        Adduct
-            Combined adduct.
         """
         return self.add(
             other,
@@ -517,7 +460,7 @@ class Adduct:
 
         Parameters
         ----------
-        neutral_formula : Formula
+        neutral_formula:
             Neutral molecular formula.
 
         Returns
@@ -525,44 +468,20 @@ class Adduct:
         Formula
             Resulting ion formula.
         """
-        total_formula = neutral_formula * self._n_molecules + self.formula_diff
-        total_formula._charge = self.charge
-        return total_formula
+        total_formula = neutral_formula * self.n_molecules + self.formula_diff
+        return total_formula.with_charge(self.charge)
 
     def apply_to_mass(self, neutral_mass: float) -> float:
         """
         Apply the adduct to a neutral mass.
 
-        Parameters
-        ----------
-        neutral_mass : float
-            Neutral monoisotopic mass.
-
-        Returns
-        -------
-        float
-            Ion mass before charge division.
+        Returns the ion mass before charge division.
         """
-        return neutral_mass * self._n_molecules + self.mass_shift
+        return neutral_mass * self.n_molecules + self.mass_shift
 
     def apply_to_mz(self, neutral_mass: float) -> float:
         """
         Apply the adduct to a neutral mass and compute m/z.
-
-        Parameters
-        ----------
-        neutral_mass : float
-            Neutral monoisotopic mass.
-
-        Returns
-        -------
-        float
-            Observed m/z value.
-
-        Raises
-        ------
-        ValueError
-            If the adduct charge is zero.
         """
         if self.charge == 0:
             raise ValueError(f"Cannot calculate m/z for uncharged adduct: {self}")
@@ -573,62 +492,45 @@ class Adduct:
     # Splitting helpers
     # -------------------------------------------------------------------------
 
-    def _split_adduct_formulas(self) -> Tuple[List[Formula], List[Formula]]:
+    def _split_adduct_formulas(self) -> Tuple[Tuple[Formula, ...], Tuple[Formula, ...]]:
         """
-        Split signed formula counts into input and output lists.
-
-        Returns
-        -------
-        Tuple[List[Formula], List[Formula]]
-            Tuple of ``(adducts_in, adducts_out)``.
+        Split signed formula counts into input and output tuples.
         """
-        adducts_in: List[Formula] = []
-        adducts_out: List[Formula] = []
+        adducts_in: list[Formula] = []
+        adducts_out: list[Formula] = []
 
-        for formula, count in self._adduct_formulas.items():
+        for formula, count in self.formula_counts.items():
             if count > 0:
                 adducts_in.extend([formula.copy()] * count)
             elif count < 0:
                 adducts_out.extend([formula.copy()] * (-count))
 
-        return adducts_in, adducts_out
+        return tuple(adducts_in), tuple(adducts_out)
 
-    def split(self, split_each: bool = False) -> Tuple["Adduct", ...]:
+    def split(self, split_each: bool = False) -> Tuple[Adduct, ...]:
         """
         Split the adduct into independent components.
-
-        Parameters
-        ----------
-        split_each : bool, default=False
-            Whether to split each formula into its own adduct.
-
-        Returns
-        -------
-        Tuple[Adduct, ...]
-            Split adduct objects.
         """
-        result: List[Adduct] = []
+        result: list[Adduct] = []
         adducts_in, adducts_out = self._split_adduct_formulas()
 
         if adducts_in:
             if split_each:
                 for formula in adducts_in:
                     result.append(
-                        Adduct(
-                            ion_type=self._ion_type,
-                            n_molecules=self._n_molecules,
-                            adducts_in=[formula.copy()],
-                            adducts_out=[],
+                        Adduct.from_adducts(
+                            ion_type=self.ion_type,
+                            n_molecules=self.n_molecules,
+                            adducts_in=(formula,),
                             charge=0,
                         )
                     )
             else:
                 result.append(
-                    Adduct(
-                        ion_type=self._ion_type,
-                        n_molecules=self._n_molecules,
+                    Adduct.from_adducts(
+                        ion_type=self.ion_type,
+                        n_molecules=self.n_molecules,
                         adducts_in=adducts_in,
-                        adducts_out=[],
                         charge=0,
                     )
                 )
@@ -637,20 +539,18 @@ class Adduct:
             if split_each:
                 for formula in adducts_out:
                     result.append(
-                        Adduct(
-                            ion_type=self._ion_type,
-                            n_molecules=self._n_molecules,
-                            adducts_in=[],
-                            adducts_out=[formula.copy()],
+                        Adduct.from_adducts(
+                            ion_type=self.ion_type,
+                            n_molecules=self.n_molecules,
+                            adducts_out=(formula,),
                             charge=0,
                         )
                     )
             else:
                 result.append(
-                    Adduct(
-                        ion_type=self._ion_type,
-                        n_molecules=self._n_molecules,
-                        adducts_in=[],
+                    Adduct.from_adducts(
+                        ion_type=self.ion_type,
+                        n_molecules=self.n_molecules,
                         adducts_out=adducts_out,
                         charge=0,
                     )
@@ -661,36 +561,26 @@ class Adduct:
     @classmethod
     def split_by_reference_adducts(
         cls,
-        adduct: "Adduct",
-        reference_adducts: Tuple["Adduct", ...],
-    ) -> Tuple[Tuple[bool, ...], "Adduct"]:
+        adduct: Adduct,
+        reference_adducts: Tuple[Adduct, ...],
+    ) -> Tuple[Tuple[bool, ...], Adduct]:
         """
         Split an adduct into reference-matched flags and a residual component.
 
-        The first returned value has the same length as reference_adducts.
-        Each boolean indicates whether the corresponding reference adduct matched.
-
         A reference adduct matches only when:
+
         - ion_type is the same
         - n_molecules is the same
         - charge direction is the same
         - all formula counts in the reference adduct exactly match the target adduct
-
-        Examples
-        --------
-        adduct = [M+2Na]+
-        reference = [M+Na]+
-        -> not matched
-
-        adduct = [M+2Na]+
-        reference = [M+2Na]+
-        -> matched
         """
-
         if adduct.charge == 0:
             raise ValueError(f"Adduct must have non-zero charge: {adduct}")
 
-        remaining_formula_counts = dict(adduct._adduct_formulas)
+        remaining_formula_counts: dict[Formula, int] = defaultdict(int)
+
+        for formula, count in adduct.formula_counts.items():
+            remaining_formula_counts[formula.plain] += count
 
         matched_flags: list[bool] = []
 
@@ -707,14 +597,14 @@ class Adduct:
 
             reference_formula_counts = {
                 formula: count
-                for formula, count in reference_adduct._adduct_formulas.items()
+                for formula, count in reference_adduct.formula_counts.items()
                 if count != 0
             }
 
             is_matched = True
 
             for formula, reference_count in reference_formula_counts.items():
-                target_count = remaining_formula_counts.get(formula, 0)
+                target_count = remaining_formula_counts.get(formula.plain, 0)
 
                 if target_count != reference_count:
                     is_matched = False
@@ -727,27 +617,30 @@ class Adduct:
             matched_flags.append(True)
 
             for formula, reference_count in reference_formula_counts.items():
-                remaining_formula_counts[formula] -= reference_count
-
-        residuals_in: list[Formula] = []
-        residuals_out: list[Formula] = []
-
-        for formula, count in remaining_formula_counts.items():
-            if count == 0:
-                continue
-
-            if count > 0:
-                residuals_in.extend([formula.copy()] * count)
-            else:
-                residuals_out.extend([formula.copy()] * (-count))
+                remaining_formula_counts[formula.plain] -= reference_count
 
         residual_component = cls(
-            ion_type=adduct._ion_type,
+            ion_type=adduct.ion_type,
             n_molecules=1,
-            adducts_in=residuals_in,
-            adducts_out=residuals_out,
+            formula_counts=remaining_formula_counts,
             charge=0,
         )
 
-        matched_adduct_flags = tuple(matched_flags)
-        return matched_adduct_flags, residual_component
+        return tuple(matched_flags), residual_component
+
+    # -------------------------------------------------------------------------
+    # Internal helpers
+    # -------------------------------------------------------------------------
+
+    @staticmethod
+    def _normalize_formula_key(formula: FormulaKey) -> Formula:
+        """
+        Normalize a formula key to a plain Formula object.
+        """
+        if isinstance(formula, str):
+            return Formula.parse(formula).plain
+
+        if isinstance(formula, Formula):
+            return formula.plain
+
+        raise TypeError(f"formula must be str or Formula, got {type(formula)}")
