@@ -54,11 +54,33 @@ class Compound:
         if not isinstance(mol, Chem.Mol):
             raise TypeError("mol must be an RDKit Mol object.")
 
-        smiles = Chem.MolToSmiles(mol, canonical=True)
+        # Atom map numbers participate in RDKit's canonical atom ordering. Keep
+        # their association with the input atom indices, but canonicalize a copy
+        # from which they have been removed.
+        mol_without_atom_map = Chem.Mol(mol)
+        original_atom_maps = [
+            atom.GetAtomMapNum()
+            for atom in mol_without_atom_map.GetAtoms()
+        ]
+
+        for atom in mol_without_atom_map.GetAtoms():
+            atom.SetAtomMapNum(0)
+
+        smiles = Chem.MolToSmiles(mol_without_atom_map, canonical=True)
+        atom_output_order = self._smiles_atom_output_order(mol_without_atom_map)
         canonical_mol = Chem.MolFromSmiles(smiles)
 
         if canonical_mol is None:
             raise ValueError("Failed to construct a canonical molecule from the input.")
+
+        if canonical_mol.GetNumAtoms() != len(atom_output_order):
+            raise ValueError("Atom count mismatch after canonicalization.")
+
+        if not overwrite_atom_map:
+            for new_idx, old_idx in enumerate(atom_output_order):
+                canonical_mol.GetAtomWithIdx(new_idx).SetAtomMapNum(
+                    original_atom_maps[old_idx]
+                )
 
         mapped_mol = self._assign_atom_map(
             canonical_mol,
@@ -164,7 +186,7 @@ class Compound:
         return mol
 
     @property
-    def mol_with_atom_map(self) -> Chem.Mol:
+    def mapped_mol(self) -> Chem.Mol:
         """
         RDKit molecule with atom map numbers.
 
@@ -323,6 +345,16 @@ class Compound:
     # ------------------------------------------------------------------
     # Internal atom-map utilities
     # ------------------------------------------------------------------
+    @staticmethod
+    def _smiles_atom_output_order(mol: Chem.Mol) -> list[int]:
+        """Return the input atom indices in the last SMILES output order."""
+        atom_order_text = mol.GetProp("_smilesAtomOutputOrder")
+        return [
+            int(value)
+            for value in atom_order_text.strip("[]").split(",")
+            if value
+        ]
+
     @staticmethod
     def _assign_atom_map(
         mol: Chem.Mol,

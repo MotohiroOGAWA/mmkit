@@ -39,7 +39,7 @@ Properties
    * - :attr:`~mmkit.Compound.mol`
      - RDKit molecule without atom map numbers.
 
-   * - :attr:`~mmkit.Compound.mol_with_atom_map`
+   * - :attr:`~mmkit.Compound.mapped_mol`
      - RDKit molecule with atom map numbers.
 
    * - :attr:`~mmkit.Compound.smiles`
@@ -101,7 +101,7 @@ Property Details
 .. autoattribute:: Compound.mol
 
 
-.. autoattribute:: Compound.mol_with_atom_map
+.. autoattribute:: Compound.mapped_mol
 
 
 .. autoattribute:: Compound.smiles

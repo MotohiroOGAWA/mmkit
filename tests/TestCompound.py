@@ -51,9 +51,9 @@ class TestCompound(unittest.TestCase):
         self.assertIsInstance(mol, Chem.Mol)
         self.assertTrue(all(atom.GetAtomMapNum() == 0 for atom in mol.GetAtoms()))
 
-    def test_mol_with_atom_map_returns_copy(self) -> None:
+    def test_mapped_mol_returns_copy(self) -> None:
         """Return a copy of the molecule with atom map numbers."""
-        mol = self.mapped_ethanol.mol_with_atom_map
+        mol = self.mapped_ethanol.mapped_mol
 
         self.assertIsInstance(mol, Chem.Mol)
         self.assertEqual(
@@ -115,7 +115,7 @@ class TestCompound(unittest.TestCase):
         self.assertTrue(
             all(
                 atom.GetAtomMapNum() > 0
-                for atom in compound.mol_with_atom_map.GetAtoms()
+                for atom in compound.mapped_mol.GetAtoms()
             )
         )
 
@@ -128,10 +128,67 @@ class TestCompound(unittest.TestCase):
 
         atom_map_nums = {
             atom.GetAtomMapNum()
-            for atom in compound.mol_with_atom_map.GetAtoms()
+            for atom in compound.mapped_mol.GetAtoms()
         }
 
         self.assertEqual(atom_map_nums, {1, 2, 3})
+
+    def test_canonicalization_ignores_atom_maps_and_restores_them(self) -> None:
+        """Canonicalize without maps, then restore each map to the same atom."""
+        order_sensitive_mol = Chem.MolFromSmiles("[CH3:99][CH2][OH:7]")
+        self.assertIsNotNone(order_sensitive_mol)
+        Chem.MolToSmiles(order_sensitive_mol, canonical=True)
+        mapped_order = Compound._smiles_atom_output_order(order_sensitive_mol)
+        for atom in order_sensitive_mol.GetAtoms():
+            atom.SetAtomMapNum(0)
+        Chem.MolToSmiles(order_sensitive_mol, canonical=True)
+        unmapped_order = Compound._smiles_atom_output_order(order_sensitive_mol)
+        self.assertNotEqual(mapped_order, unmapped_order)
+
+        smiles = "[OH:30][CH2:20][NH2:10]"
+        input_mol = Chem.MolFromSmiles(smiles)
+        self.assertIsNotNone(input_mol)
+
+        for atom in input_mol.GetAtoms():
+            atom.SetAtomMapNum(0)
+        unmapped_canonical = Chem.MolToSmiles(input_mol, canonical=True)
+
+        compound = Compound.from_smiles(smiles)
+
+        self.assertEqual(compound.smiles, unmapped_canonical)
+        self.assertEqual(
+            {
+                atom.GetSymbol(): atom.GetAtomMapNum()
+                for atom in compound.mapped_mol.GetAtoms()
+            },
+            {"O": 30, "C": 20, "N": 10},
+        )
+
+    def test_partial_atom_maps_are_restored_before_missing_maps_are_filled(self) -> None:
+        """Preserve existing maps and assign unused numbers to unmapped atoms."""
+        compound = Compound.from_smiles("[CH3:99][CH2][OH:7]")
+
+        maps_by_symbol_and_hydrogens = {
+            (atom.GetSymbol(), atom.GetTotalNumHs()): atom.GetAtomMapNum()
+            for atom in compound.mapped_mol.GetAtoms()
+        }
+        self.assertEqual(maps_by_symbol_and_hydrogens[("C", 3)], 99)
+        self.assertEqual(maps_by_symbol_and_hydrogens[("O", 1)], 7)
+        self.assertEqual(maps_by_symbol_and_hydrogens[("C", 2)], 1)
+
+    def test_overwrite_does_not_restore_original_atom_maps(self) -> None:
+        """Assign fresh maps after map-independent canonicalization on overwrite."""
+        compound = Compound.from_smiles(
+            "[OH:30][CH2:20][NH2:10]",
+            overwrite_atom_map=True,
+        )
+
+        atom_map_nums = [
+            atom.GetAtomMapNum()
+            for atom in compound.mapped_mol.GetAtoms()
+        ]
+        self.assertEqual(atom_map_nums, [1, 2, 3])
+        self.assertTrue({10, 20, 30}.isdisjoint(atom_map_nums))
 
     def test_assign_atom_map_helper_with_mapping_dict(self) -> None:
         """Store old-to-new atom map number mappings in the internal helper."""
