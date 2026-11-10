@@ -7,12 +7,12 @@ Source-build commands run from the repository root. Release installation does no
 Install the versioned source distribution from GitHub Releases:
 
 ```sh
-python -m pip install "https://github.com/MotohiroOGAWA/mmkit/releases/download/v0.2.0/mmkit-0.2.0.tar.gz"
+python -m pip install "https://github.com/MotohiroOGAWA/mmkit/releases/download/v0.2.1/mmkit-0.2.0.tar.gz"
 ```
 
 This builds the extension locally, so the build requirements below apply. To avoid compiling, select a compatible wheel on the release page and use `python -m pip install "<exact-wheel-asset-URL>"`. Wheels must match your Python ABI and platform and still require compatible RDKit runtime libraries. The `rdkit` and `bidict` dependencies are resolved by pip from your configured package index.
 
-Change both `v0.2.0` and the filename version to select another release. This command works after the corresponding assets have been published.
+Change both `v0.2.1` and the filename version to select another release. This command works after the corresponding assets have been published.
 
 ## Source build requirements
 

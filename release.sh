@@ -1,10 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
+export PATH="${HOME}/.local/bin:$PATH"
 project_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 cd "$project_dir"
 python_executable="${PYTHON:-python3}"
 selection=""
 dry_run=OFF
+local_only=OFF
+publish_only=OFF
 for argument in "$@"; do
     case "$argument" in
         major|minor|patch|--current)
@@ -14,14 +17,24 @@ for argument in "$@"; do
             fi
             selection="$argument" ;;
         --dry-run) dry_run=ON ;;
+        --local) local_only=ON ;;
+        --publish-only) publish_only=ON ;;
         -h|--help)
-            echo 'Usage: ./release.sh [major|minor|patch|--current] [--dry-run]'
+            echo 'Usage: ./release.sh [major|minor|patch|--current] [--dry-run] [--local|--publish-only]'
             echo 'Without a version choice, prompts interactively. --current keeps the existing version.'
+            echo '--local builds without publishing. --publish-only publishes existing assets for the current version.'
             echo '--dry-run previews the version and output path without modifying or building anything.'
             exit 0 ;;
         *) echo "Unknown argument: $argument" >&2; exit 2 ;;
     esac
 done
+if [[ "$publish_only" == ON ]]; then
+    if [[ -n "$selection" || "$local_only" == ON || "$dry_run" == ON ]]; then
+        echo '--publish-only cannot be combined with version choices or other modes.' >&2
+        exit 2
+    fi
+    exec bash scripts/publish.sh
+fi
 current="$("$python_executable" scripts/version.py)"
 if [[ -z "$selection" ]]; then
     printf 'Current version: %s\n' "$current"
@@ -54,6 +67,17 @@ printf 'Release version: %s -> %s\nOutput: %s\n' "$current" "$version" "$output_
 if [[ "$dry_run" == ON ]]; then
     exit 0
 fi
+if [[ "$local_only" != ON ]]; then
+    if ! command -v gh >/dev/null; then
+        echo 'GitHub CLI (gh) is required. Install it and run gh auth login, or use --local.' >&2
+        exit 1
+    fi
+    gh auth status >/dev/null
+    if [[ -n "$(git status --porcelain)" ]]; then
+        echo 'Commit your intended changes before releasing, or use --local to build only.' >&2
+        exit 1
+    fi
+fi
 if [[ -e "$output_dir" ]]; then
     echo "Output already exists: $output_dir. Use a new version or move the previous output before rebuilding." >&2
     exit 1
@@ -72,4 +96,13 @@ tar -czf "$output_dir/mmkit-$version-java-$platform.tar.gz" -C "$java_dir" .
 cp "$build_dir/packages/Mmkit.$version.nupkg" "$output_dir/Mmkit.$version.$platform.nupkg"
 cp LICENSE RELEASE.md "$output_dir/"
 (cd "$output_dir" && sha256sum ./*.whl ./*.tar.gz ./*.nupkg ./LICENSE ./RELEASE.md > SHA256SUMS)
-printf '\nRelease files prepared in %s\nNo files have been uploaded.\n' "$output_dir"
+printf '\nRelease files prepared in %s\n' "$output_dir"
+if [[ "$local_only" == ON ]]; then
+    echo 'Local build only. Publish later with ./release.sh --publish-only after committing changes.'
+else
+    git add VERSION CMakeLists.txt pyproject.toml bindings/python/mmkit/__init__.py README.md RELEASE.md docs/
+    if ! git diff --cached --quiet; then
+        git commit -m "Release $version"
+    fi
+    bash scripts/publish.sh
+fi
