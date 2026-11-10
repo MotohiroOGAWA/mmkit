@@ -14,13 +14,13 @@ Run the script from the repository root and select `major`, `minor`, or `patch` 
 ./release.sh
 ```
 
-The script checks GitHub authentication and a clean working tree, increments the selected component, updates package versions and documentation, runs all tests, prepares every language's assets, commits the version changes, pushes the commit and tag, and publishes a GitHub Release. From `0.2.1`, the choices are:
+The script checks GitHub authentication and a clean working tree, increments the selected component, updates package versions and documentation, runs all tests, prepares every language's assets, commits the version changes, pushes the commit and tag, and publishes a GitHub Release. From `1.0.0`, the choices are:
 
 | Choice | New version |
 | --- | --- |
 | major | `1.0.0` |
 | minor | `0.3.0` |
-| patch | `0.2.1` |
+| patch | `1.0.0` |
 
 You can also select the increment without a prompt:
 
@@ -31,7 +31,7 @@ You can also select the increment without a prompt:
 
 `--dry-run` previews the new version and output path without changing files or running builds. `./release.sh --current` builds the existing version without incrementing it, and refuses to overwrite an existing output directory.
 
-`VERSION` is checked against CMake, Python metadata, and the Python runtime version. Java and C# versions come from CMake. To set an explicit version manually, use `python scripts/version.py 0.2.1`; to check consistency, use `python scripts/version.py`.
+`VERSION` is checked against CMake, Python metadata, and the Python runtime version. Java and C# versions come from CMake. To set an explicit version manually, use `python scripts/version.py 1.0.0`; to check consistency, use `python scripts/version.py`.
 
 Increment PATCH for compatible fixes, MINOR for compatible features, and MAJOR for breaking changes. Never replace published assets; publish a new version instead. If a build fails after the version update, correct the failure and retry with `--current` after moving any incomplete output directory, rather than incrementing again. The default flow commits the generated version changes automatically. With `--local`, review and commit those changes before publishing.
 
@@ -58,14 +58,14 @@ Start with a clean committed working tree. The default command publishes automat
 
 Set `PYTHON=/path/to/python` and `JOBS=2` as needed. `release.sh` checks version consistency, runs all six suites in Release mode, builds a Python source distribution and wheel, stages C++, and collects Java and C# packages. It stops on errors and refuses to overwrite an existing output directory.
 
-For version `0.2.1` on Linux x86_64, output is `dist/v0.2.1/linux-x86_64/`:
+For version `1.0.0` on Linux x86_64, output is `dist/v1.0.0/linux-x86_64/`:
 
 | Language | Release asset |
 | --- | --- |
-| Python | `mmkit-0.2.0.tar.gz` and `mmkit-0.2.1-<python>-<abi>-<platform>.whl` |
-| Java | `mmkit-0.2.1-java-linux-x86_64.tar.gz` containing JAR and JNI library |
+| Python | `mmkit-0.2.0.tar.gz` and `mmkit-1.0.0-<python>-<abi>-<platform>.whl` |
+| Java | `mmkit-1.0.0-java-linux-x86_64.tar.gz` containing JAR and JNI library |
 | C# | `Mmkit.0.2.0.linux-x86_64.nupkg` containing managed and native libraries |
-| C++ | `mmkit-0.2.1-cpp-linux-x86_64.tar.gz` containing headers, static library, and CMake package |
+| C++ | `mmkit-1.0.0-cpp-linux-x86_64.tar.gz` containing headers, static library, and CMake package |
 | Shared | `LICENSE`, `RELEASE.md`, and `SHA256SUMS` |
 
 For multiple platforms, collect uniquely named native assets and wheels into the same release. Upload the source distribution once. Keep platform checksum manifests distinct when combining output directories.
@@ -76,7 +76,7 @@ The integration tests exercise bindings built from source. Also test the actual 
 
 - Python: install the wheel by local path, run `tests/python/smoke.py`, then build and install from the `.tar.gz` in a separate clean environment. Ensure pip does not reuse an earlier package.
 - Java: extract the release archive, compile `tests/java/Smoke.java` against its JAR, and run with `java.library.path` pointing to the extracted JNI library.
-- C#: download or copy the package into a local package feed, reference it with `dotnet add package Mmkit --version 0.2.1 --source <feed-directory>`, and run the example from docs/csharp.md. This verifies package consumption rather than a project reference.
+- C#: download or copy the package into a local package feed, reference it with `dotnet add package Mmkit --version 1.0.0 --source <feed-directory>`, and run the example from docs/csharp.md. This verifies package consumption rather than a project reference.
 - C++: extract the archive and build a consumer with `find_package(mmkit CONFIG REQUIRED)` and `mmkit::mmkit`, setting `CMAKE_PREFIX_PATH` to the extraction directory.
 
 Run `ldd` on the wheel extension and JNI/PInvoke libraries to identify runtime dependencies. Include compatible RDKit installation instructions and platform requirements in the release notes. Python source-archive consumers also need the native build tools. Wheels are platform-specific and are not automatically repaired or bundled for broad Linux compatibility.
@@ -84,7 +84,7 @@ Run `ldd` on the wheel extension and JNI/PInvoke libraries to identify runtime d
 Check the release files before uploading:
 
 ```sh
-cd dist/v0.2.1/linux-x86_64
+cd dist/v1.0.0/linux-x86_64
 sha256sum -c SHA256SUMS
 ```
 
@@ -93,17 +93,17 @@ sha256sum -c SHA256SUMS
 After committing and reviewing the exact release revision, create its version tag and draft release. The default script handles publication. For a local build, `./release.sh --publish-only` is the simplest publication command. Alternatively, run these manual commands only when ready to publish:
 
 ```sh
-git tag -a v0.2.1 -m "Release 0.2.1"
-git push origin v0.2.1
-gh release create v0.2.1 dist/v0.2.1/linux-x86_64/* \
+git tag -a v1.0.0 -m "Release 1.0.0"
+git push origin v1.0.0
+gh release create v1.0.0 dist/v1.0.0/linux-x86_64/* \
   --repo MotohiroOGAWA/mmkit --verify-tag --draft \
-  --title "mmkit 0.2.1" --notes-file release-notes.md
+  --title "mmkit 1.0.0" --notes-file release-notes.md
 ```
 
 Write `release-notes.md` before running the command. Include changes, supported platform and Python ABI, RDKit runtime requirements, and links to all language guides. Review the draft assets, then publish:
 
 ```sh
-gh release edit v0.2.1 --repo MotohiroOGAWA/mmkit --draft=false
+gh release edit v1.0.0 --repo MotohiroOGAWA/mmkit --draft=false
 ```
 
 ## 6. Verify the published URLs
@@ -115,7 +115,7 @@ The immutable versioned asset URL pattern is:
 Use the commands in [README.md](README.md), [Python](docs/python.md), [Java](docs/java.md), and [C#](docs/csharp.md) against the public release from a clean environment. For Python, this includes:
 
 ```sh
-python -m pip install --no-cache-dir "https://github.com/MotohiroOGAWA/mmkit/releases/download/v0.2.1/mmkit-0.2.0.tar.gz"
+python -m pip install --no-cache-dir "https://github.com/MotohiroOGAWA/mmkit/releases/download/v1.0.0/mmkit-0.2.0.tar.gz"
 ```
 
 A compatible wheel can be installed by its exact asset URL instead. Package dependencies may still be resolved from the consumer's configured package index. Confirm the installed `mmkit.__version__` is the requested version and run the integration tests. A successful local build alone does not establish that public download URLs are available.

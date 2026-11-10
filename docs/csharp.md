@@ -8,8 +8,8 @@ From a .NET application directory:
 
 ```sh
 mkdir -p vendor/packages
-curl -fL "https://github.com/MotohiroOGAWA/mmkit/releases/download/v0.2.1/Mmkit.0.2.0.linux-x86_64.nupkg" -o vendor/packages/Mmkit.0.2.0.nupkg
-dotnet add package Mmkit --version 0.2.1 --source "$PWD/vendor/packages"
+curl -fL "https://github.com/MotohiroOGAWA/mmkit/releases/download/v1.0.0/Mmkit.0.2.0.linux-x86_64.nupkg" -o vendor/packages/Mmkit.0.2.0.nupkg
+dotnet add package Mmkit --version 1.0.0 --source "$PWD/vendor/packages"
 dotnet run
 ```
 
@@ -42,7 +42,7 @@ Create an application and reference the local package:
 
 ```sh
 dotnet new console --framework net8.0 --output build/csharp-app
-dotnet add build/csharp-app package Mmkit --version 0.2.1 --source "$PWD/build/csharp/packages"
+dotnet add build/csharp-app package Mmkit --version 1.0.0 --source "$PWD/build/csharp/packages"
 ```
 
 Replace `build/csharp-app/Program.cs` with:

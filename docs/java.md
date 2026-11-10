@@ -5,16 +5,16 @@ Source-build commands run from the repository root. Release installation does no
 ## Install a specific release
 
 ```sh
-mkdir -p vendor/mmkit-0.2.1
-curl -fL "https://github.com/MotohiroOGAWA/mmkit/releases/download/v0.2.1/mmkit-0.2.1-java-linux-x86_64.tar.gz" -o vendor/mmkit-java.tar.gz
-tar -xzf vendor/mmkit-java.tar.gz -C vendor/mmkit-0.2.1
+mkdir -p vendor/mmkit-1.0.0
+curl -fL "https://github.com/MotohiroOGAWA/mmkit/releases/download/v1.0.0/mmkit-1.0.0-java-linux-x86_64.tar.gz" -o vendor/mmkit-java.tar.gz
+tar -xzf vendor/mmkit-java.tar.gz -C vendor/mmkit-1.0.0
 ```
 
 This downloads the prebuilt JAR and JNI library; consumers do not need a compiler, CMake, or SWIG. A Java runtime and compatible RDKit shared libraries are required. Compile and run the example below against the downloaded files:
 
 ```sh
-javac -cp vendor/mmkit-0.2.1/mmkit-0.2.0.jar Main.java
-java -Djava.library.path="$PWD/vendor/mmkit-0.2.1" -cp "vendor/mmkit-0.2.1/mmkit-0.2.0.jar:." Main
+javac -cp vendor/mmkit-1.0.0/mmkit-0.2.0.jar Main.java
+java -Djava.library.path="$PWD/vendor/mmkit-1.0.0" -cp "vendor/mmkit-1.0.0/mmkit-0.2.0.jar:." Main
 ```
 
 Change the tag, filenames, and paths to select another version. Choose an archive matching your platform. The URL is available after the corresponding release is published.

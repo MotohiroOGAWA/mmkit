@@ -3,5 +3,5 @@ from .Formula import Formula
 from .Compound import Compound
 from .Adduct import Adduct
 
-__version__ = "0.2.1"
+__version__ = "1.0.0"
 __all__ = ["Formula", "Compound", "Adduct"]

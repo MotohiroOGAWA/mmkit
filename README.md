@@ -4,14 +4,14 @@ A C++17 molecular formula library supporting element counts, charge, parsing, Hi
 
 ## Install a specific release
 
-Versions use `MAJOR.MINOR.PATCH` (for example `0.2.1`), with Git tags such as `v0.2.1`. Install from the assets of the selected [GitHub Release](https://github.com/MotohiroOGAWA/mmkit/releases), using a fixed version rather than a latest-release URL. The commands below are examples for version `0.2.1` on Linux x86_64 and require that release's assets to have been published.
+Versions use `MAJOR.MINOR.PATCH` (for example `1.0.0`), with Git tags such as `v1.0.0`. Install from the assets of the selected [GitHub Release](https://github.com/MotohiroOGAWA/mmkit/releases), using a fixed version rather than a latest-release URL. The commands below are examples for version `1.0.0` on Linux x86_64 and require that release's assets to have been published.
 
-| Language | Install from release `v0.2.1` | Guide |
+| Language | Install from release `v1.0.0` | Guide |
 | --- | --- | --- |
-| Python | `python -m pip install "https://github.com/MotohiroOGAWA/mmkit/releases/download/v0.2.1/mmkit-0.2.0.tar.gz"` | [Python](docs/python.md) |
-| Java | `curl -fLO "https://github.com/MotohiroOGAWA/mmkit/releases/download/v0.2.1/mmkit-0.2.1-java-linux-x86_64.tar.gz"` then extract and add the JAR and JNI library to the application | [Java](docs/java.md) |
-| C# | `curl -fL "https://github.com/MotohiroOGAWA/mmkit/releases/download/v0.2.1/Mmkit.0.2.0.linux-x86_64.nupkg" -o Mmkit.0.2.0.nupkg` then `dotnet add package Mmkit --version 0.2.1 --source "$PWD"` in the application directory | [C#](docs/csharp.md) |
-| C++ | `curl -fLO "https://github.com/MotohiroOGAWA/mmkit/releases/download/v0.2.1/mmkit-0.2.1-cpp-linux-x86_64.tar.gz"` then extract and use its CMake package | [C++ installation](#c-installation) |
+| Python | `python -m pip install "https://github.com/MotohiroOGAWA/mmkit/releases/download/v1.0.0/mmkit-0.2.0.tar.gz"` | [Python](docs/python.md) |
+| Java | `curl -fLO "https://github.com/MotohiroOGAWA/mmkit/releases/download/v1.0.0/mmkit-1.0.0-java-linux-x86_64.tar.gz"` then extract and add the JAR and JNI library to the application | [Java](docs/java.md) |
+| C# | `curl -fL "https://github.com/MotohiroOGAWA/mmkit/releases/download/v1.0.0/Mmkit.0.2.0.linux-x86_64.nupkg" -o Mmkit.0.2.0.nupkg` then `dotnet add package Mmkit --version 1.0.0 --source "$PWD"` in the application directory | [C#](docs/csharp.md) |
+| C++ | `curl -fLO "https://github.com/MotohiroOGAWA/mmkit/releases/download/v1.0.0/mmkit-1.0.0-cpp-linux-x86_64.tar.gz"` then extract and use its CMake package | [C++ installation](#c-installation) |
 
 Python's source archive builds locally and needs the C++ build dependencies. A matching release wheel can instead be installed directly by its asset URL. All native packages require compatible RDKit shared libraries. Choose assets for your OS, architecture, and Python ABI; these commands do not install from PyPI, NuGet.org, or Maven Central.
 
