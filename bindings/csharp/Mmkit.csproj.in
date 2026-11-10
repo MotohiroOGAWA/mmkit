@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <PackageId>Mmkit</PackageId>
+    <Version>@PROJECT_VERSION@</Version>
+    <Authors>Motohiro Ogawa</Authors>
+    <Description>RDKit-backed mmkit C++ bindings. Requires the matching native RDKit libraries.</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Nullable>disable</Nullable>
+    <NativeRid Condition="'$(NativeRid)' == ''">$(NETCoreSdkRuntimeIdentifier)</NativeRid>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="$(NativeLibrary)" Pack="true" PackagePath="runtimes/$(NativeRid)/native/" />
+  </ItemGroup>
+</Project>

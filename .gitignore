@@ -1,0 +1,7 @@
+/build/
+
+__pycache__/
+*.egg-info/
+tests/csharp/bin/
+tests/csharp/obj/
+/dist/

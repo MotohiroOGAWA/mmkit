@@ -1,0 +1,21 @@
+[build-system]
+requires = ["scikit-build-core>=0.10", "pybind11>=2.11"]
+build-backend = "scikit_build_core.build"
+
+[project]
+name = "mmkit"
+version = "0.2.0"
+description = "RDKit-based C++ toolkit for formulas, compounds, and adduct ions"
+authors = [{ name = "Motohiro Ogawa" }]
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.10"
+dependencies = ["rdkit", "bidict"]
+
+[tool.scikit-build]
+cmake.args = ["-DMMKIT_BUILD_PYTHON=ON", "-DBUILD_TESTING=OFF"]
+install.components = ["python"]
+wheel.packages = ["bindings/python/mmkit"]
+
+[tool.scikit-build.sdist]
+include = ["include/**", "mmkit/*.cpp", "cmake/**", "bindings/**", "tests/**", "docs/**", "run_tests.sh", "release.sh", "scripts/**", "VERSION", "RELEASE.md", "README.md", "LICENSE", "CMakeLists.txt"]
