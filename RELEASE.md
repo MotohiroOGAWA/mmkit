@@ -18,9 +18,9 @@ The script checks GitHub authentication and a clean working tree, increments the
 
 | Choice | New version |
 | --- | --- |
-| major | `1.0.0` |
-| minor | `0.3.0` |
-| patch | `1.0.0` |
+| major | `2.0.0` |
+| minor | `1.1.0` |
+| patch | `1.0.1` |
 
 You can also select the increment without a prompt:
 
@@ -62,9 +62,9 @@ For version `1.0.0` on Linux x86_64, output is `dist/v1.0.0/linux-x86_64/`:
 
 | Language | Release asset |
 | --- | --- |
-| Python | `mmkit-0.2.0.tar.gz` and `mmkit-1.0.0-<python>-<abi>-<platform>.whl` |
+| Python | `mmkit-1.0.0.tar.gz` and `mmkit-1.0.0-<python>-<abi>-<platform>.whl` |
 | Java | `mmkit-1.0.0-java-linux-x86_64.tar.gz` containing JAR and JNI library |
-| C# | `Mmkit.0.2.0.linux-x86_64.nupkg` containing managed and native libraries |
+| C# | `Mmkit.1.0.0.linux-x86_64.nupkg` containing managed and native libraries |
 | C++ | `mmkit-1.0.0-cpp-linux-x86_64.tar.gz` containing headers, static library, and CMake package |
 | Shared | `LICENSE`, `RELEASE.md`, and `SHA256SUMS` |
 
@@ -115,7 +115,7 @@ The immutable versioned asset URL pattern is:
 Use the commands in [README.md](README.md), [Python](docs/python.md), [Java](docs/java.md), and [C#](docs/csharp.md) against the public release from a clean environment. For Python, this includes:
 
 ```sh
-python -m pip install --no-cache-dir "https://github.com/MotohiroOGAWA/mmkit/releases/download/v1.0.0/mmkit-0.2.0.tar.gz"
+python -m pip install --no-cache-dir "https://github.com/MotohiroOGAWA/mmkit/releases/download/v1.0.0/mmkit-1.0.0.tar.gz"
 ```
 
 A compatible wheel can be installed by its exact asset URL instead. Package dependencies may still be resolved from the consumer's configured package index. Confirm the installed `mmkit.__version__` is the requested version and run the integration tests. A successful local build alone does not establish that public download URLs are available.

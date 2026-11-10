@@ -13,8 +13,8 @@ tar -xzf vendor/mmkit-java.tar.gz -C vendor/mmkit-1.0.0
 This downloads the prebuilt JAR and JNI library; consumers do not need a compiler, CMake, or SWIG. A Java runtime and compatible RDKit shared libraries are required. Compile and run the example below against the downloaded files:
 
 ```sh
-javac -cp vendor/mmkit-1.0.0/mmkit-0.2.0.jar Main.java
-java -Djava.library.path="$PWD/vendor/mmkit-1.0.0" -cp "vendor/mmkit-1.0.0/mmkit-0.2.0.jar:." Main
+javac -cp vendor/mmkit-1.0.0/mmkit-1.0.0.jar Main.java
+java -Djava.library.path="$PWD/vendor/mmkit-1.0.0" -cp "vendor/mmkit-1.0.0/mmkit-1.0.0.jar:." Main
 ```
 
 Change the tag, filenames, and paths to select another version. Choose an archive matching your platform. The URL is available after the corresponding release is published.
@@ -30,7 +30,7 @@ cmake -S . -B build/java -DCMAKE_BUILD_TYPE=Release -DMMKIT_BUILD_JAVA=ON
 cmake --build build/java --parallel 2
 ```
 
-The build produces `build/java/mmkit-0.2.0.jar` and `build/java/libmmkit_java.so`. Substitute the selected release version when using another version.
+The build produces `build/java/mmkit-1.0.0.jar` and `build/java/libmmkit_java.so`. Substitute the selected release version when using another version.
 
 ## Use the classes
 
@@ -59,8 +59,8 @@ public class Main {
 Compile and run:
 
 ```sh
-javac -cp build/java/mmkit-0.2.0.jar Main.java
-java -Djava.library.path="$PWD/build/java" -cp "build/java/mmkit-0.2.0.jar:." Main
+javac -cp build/java/mmkit-1.0.0.jar Main.java
+java -Djava.library.path="$PWD/build/java" -cp "build/java/mmkit-1.0.0.jar:." Main
 ```
 
 Java uses methods such as `formula()` and `exact_mass()`. Native objects implement `AutoCloseable`; use try-with-resources to release them. Invalid formula, compound, or adduct input raises `IllegalArgumentException`.

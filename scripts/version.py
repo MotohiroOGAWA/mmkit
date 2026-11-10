@@ -41,7 +41,23 @@ for name, version_pattern in patterns.items():
 if (args.version or args.bump) and not args.dry_run:
     # Keep release URLs and installation examples aligned with the package version.
     for path in [root / 'README.md', root / 'RELEASE.md', *(root / 'docs').glob('*.md')]:
-        updates[path] = re.sub(r'(?<![0-9.])' + re.escape(current) + r'(?![0-9.])', version, path.read_text())
+        text = path.read_text()
+        # A suffix such as .tar.gz, .jar, or .linux-x86_64 is not part of a version.
+        text = re.sub(r'(?<![0-9.])' + re.escape(current) + r'(?![0-9]|\.[0-9])', version, text)
+        # Repair stale asset versions too, even if they no longer match VERSION.
+        text = re.sub(r'(?i)(mmkit[-.])[0-9]+\.[0-9]+\.[0-9]+',
+                      lambda match: match[1] + version, text)
+        text = re.sub(r'(releases/download/v)[0-9]+\.[0-9]+\.[0-9]+',
+                      lambda match: match[1] + version, text)
+        if path.name == 'RELEASE.md':
+            major, minor, patch = map(int, version.split('.'))
+            increments = {'major': f'{major + 1}.0.0',
+                          'minor': f'{major}.{minor + 1}.0',
+                          'patch': f'{major}.{minor}.{patch + 1}'}
+            for level, next_version in increments.items():
+                text = re.sub(r'(\| ' + level + r' \| `)[0-9]+\.[0-9]+\.[0-9]+(` \|)',
+                              lambda match: match[1] + next_version + match[2], text)
+        updates[path] = text
     for path, text in updates.items():
         path.write_text(text)
     (root / 'VERSION').write_text(version + '\n')

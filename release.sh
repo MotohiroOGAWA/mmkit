@@ -83,6 +83,7 @@ if [[ -e "$output_dir" ]]; then
     exit 1
 fi
 "$python_executable" scripts/version.py "${version_args[@]}" > /dev/null
+"$python_executable" tests/scripts/test_version.py
 BUILD_DIR="$build_dir" BUILD_TYPE=Release PYTHON="$python_executable" ./run_tests.sh --bindings
 mkdir -p "$output_dir"
 CMAKE_BUILD_PARALLEL_LEVEL="${JOBS:-2}" "$python_executable" -m build --outdir "$output_dir"

@@ -8,7 +8,7 @@ From a .NET application directory:
 
 ```sh
 mkdir -p vendor/packages
-curl -fL "https://github.com/MotohiroOGAWA/mmkit/releases/download/v1.0.0/Mmkit.0.2.0.linux-x86_64.nupkg" -o vendor/packages/Mmkit.0.2.0.nupkg
+curl -fL "https://github.com/MotohiroOGAWA/mmkit/releases/download/v1.0.0/Mmkit.1.0.0.linux-x86_64.nupkg" -o vendor/packages/Mmkit.1.0.0.nupkg
 dotnet add package Mmkit --version 1.0.0 --source "$PWD/vendor/packages"
 dotnet run
 ```
@@ -32,7 +32,7 @@ The build produces:
 
 - `build/csharp/csharp/bin/Release/net8.0/Mmkit.dll`
 - `build/csharp/libmmkit_csharp.so`
-- `build/csharp/packages/Mmkit.0.2.0.nupkg`
+- `build/csharp/packages/Mmkit.1.0.0.nupkg`
 
 The NuGet package includes the native library for the build platform. Substitute the selected release version when using another version.
 
